@@ -1,6 +1,6 @@
 pragma solidity ^0.8.22;
 // SPDX-License-Identifier: UNLICENSED
-import "Taxpayer.sol";
+import "./Taxpayer.sol";
 
 contract Lottery {
 address owner;

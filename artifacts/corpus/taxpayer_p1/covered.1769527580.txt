@@ -1,0 +1,251 @@
+/src/contracts/Lottery.sol
+      pragma solidity ^0.8.22;
+      // SPDX-License-Identifier: UNLICENSED
+      import "./Taxpayer.sol";
+      
+      contract Lottery {
+      address owner;
+      mapping (address => bytes32) commits;
+      mapping (address => uint) reveals;
+      address[] revealed;
+      
+      uint256 startTime;
+      uint256 revealTime;
+      uint256 endTime;
+      uint256 period;
+      bool iscontract;
+      
+      // Initialize the registry with the lottery period.
+       constructor(uint p) {
+        period = p;
+        startTime = 0;
+        endTime = 0;
+        iscontract=true;
+       } 
+      
+      
+      //If the lottery has not started, anyone can invoke a lottery.
+      function startLottery() public {
+        require (startTime == 0);
+        //startTime current time. Users send their committed value
+        startTime = block.timestamp;
+        //revealTime  time for revealing. User reveal their value
+        revealTime = startTime+period;
+        //endTime a winner can be computed
+        endTime = revealTime+period;
+      }
+      
+      //A taxpayer send his own commitment. 
+      function commit(bytes32 y) public {
+        require(block.timestamp >= startTime);
+        commits[msg.sender] = y;
+      }
+      
+      //A valid taxpayer who sent his own commitment, sends the revealing value.
+      function reveal(uint256 rev) public {
+        require(block.timestamp >= revealTime);
+        require(keccak256(abi.encode(rev))==commits[msg.sender]);
+        revealed.push(msg.sender);
+        reveals[msg.sender] = uint(rev);
+        
+      }
+      
+      //Ends the lottery and compute the winner.
+      function endLottery() public {
+        require(block.timestamp >= endTime);
+        uint total = 0;
+        for (uint i = 0; i < revealed.length; i++)
+          total+= reveals[revealed[i]];
+        Taxpayer(revealed[total%revealed.length]).setTaxAllowance(7000);
+        startTime = 0;
+        revealTime=0;
+        endTime = 0;
+      }
+        function isContract() public view returns(bool) {
+          return iscontract;
+        }
+      
+      }
+      
+
+/src/contracts/Taxpayer.sol
+      pragma solidity ^0.8.22;
+      
+      import "./Lottery.sol";
+      
+      contract Taxpayer {
+      
+       uint age; 
+      
+       bool isMarried; 
+      
+       bool iscontract;
+      
+       /* Reference to spouse if person is married, address(0) otherwise */
+       address spouse; 
+      
+      
+      address  parent1; 
+      address  parent2; 
+      
+       /* Constant default income tax allowance */
+ *     uint constant  DEFAULT_ALLOWANCE = 5000;
+      
+       /* Constant income tax allowance for Older Taxpayers over 65 */
+        uint constant ALLOWANCE_OAP = 7000;
+      
+       /* Income tax allowance */
+       uint tax_allowance; 
+      
+       uint income; 
+      
+      uint256 rev;
+      
+      
+      //Parents are taxpayers
+ *     constructor(address p1, address p2) {
+ *       age = 0;
+ *       isMarried = false;
+ *       parent1 = p1;
+ *       parent2 = p2;
+ *       spouse = address(0);
+ *       income = 0;
+ *       tax_allowance = DEFAULT_ALLOWANCE;
+ *       iscontract = true;
+       } 
+      
+      
+       //We require new_spouse != address(0);
+ *     function marry(address new_spouse) public {
+ *      spouse = new_spouse;
+ *      isMarried = true;
+       }
+       
+ *     function divorce() public {
+ *      spouse = address(0);
+ *      isMarried = false;
+       }
+      
+       /* Transfer part of tax allowance to own spouse */
+       function transferAllowance(uint change) public {
+        tax_allowance = tax_allowance - change;
+        Taxpayer sp = Taxpayer(address(spouse));
+        sp.setTaxAllowance(sp.getTaxAllowance()+change);
+       }
+      
+       function haveBirthday() public {
+        age++;
+       }
+       
+        function setTaxAllowance(uint ta) public {
+          require(Taxpayer(msg.sender).isContract() || Lottery(msg.sender).isContract());
+          tax_allowance = ta;
+        }
+        function getTaxAllowance() public view returns(uint) {
+          return tax_allowance;
+        }
+        function isContract() public view returns(bool){
+          return iscontract;
+        }
+      
+        function joinLottery(address lot, uint256 r) public {
+          Lottery l = Lottery(lot);
+          l.commit(keccak256(abi.encode(r)));
+          rev = r;
+        }
+         function revealLottery(address lot, uint256 r) public {
+          Lottery l = Lottery(lot);
+          l.reveal(r);
+          rev = 0;
+        }
+      
+      }
+      
+
+/src/tests/echidna/Echidna_Taxpayer_P1.sol
+      // SPDX-License-Identifier: UNLICENSED
+      pragma solidity ^0.8.22;
+      
+      import "./TaxpayerHarness.sol";
+      
+ *r   contract Echidna_Taxpayer_P1 {
+          TaxpayerHarness[] internal people;
+      
+ *        constructor() {
+              // deploy 6 taxpayers with dummy parents (address(1), address(2), etc.)
+ *            for (uint256 i = 0; i < 6; i++) {
+ *                people.push(new TaxpayerHarness(address(uint160(100 + i)), address(uint160(200 + i))));
+              }
+          }
+      
+ *        function _p(uint8 i) internal view returns (TaxpayerHarness) {
+ *            return people[uint256(i) % people.length];
+          }
+      
+          // actions
+ *        function act_marry(uint8 i, uint8 j) external {
+ *            TaxpayerHarness a = _p(i);
+ *            TaxpayerHarness b = _p(j);
+ *            a.marry(address(b));
+          }
+      
+ *        function act_divorce(uint8 i) external {
+ *            TaxpayerHarness a = _p(i);
+ *            a.divorce();
+          }
+      
+          // P1.1 Symmetry: if A.spouse == B != 0 then B.spouse == A
+          function echidna_p1_symmetry() external view returns (bool) {
+              for (uint256 i = 0; i < people.length; i++) {
+                  TaxpayerHarness a = people[i];
+                  address bAddr = a.getSpouse();
+                  if (bAddr != address(0)) {
+                      TaxpayerHarness b = TaxpayerHarness(bAddr);
+                      if (b.getSpouse() != address(a)) return false;
+                  }
+              }
+              return true;
+          }
+      
+          // P1.2 No self-marriage
+          function echidna_p1_no_self_marriage() external view returns (bool) {
+              for (uint256 i = 0; i < people.length; i++) {
+                  TaxpayerHarness a = people[i];
+                  if (a.getSpouse() == address(a)) return false;
+              }
+              return true;
+          }
+      
+          // P1.3 Coherent unmarried: if A.spouse == 0 then no one points to A
+          function echidna_p1_coherent_unmarried() external view returns (bool) {
+              for (uint256 i = 0; i < people.length; i++) {
+                  TaxpayerHarness a = people[i];
+                  if (a.getSpouse() == address(0)) {
+                      for (uint256 j = 0; j < people.length; j++) {
+                          TaxpayerHarness x = people[j];
+                          if (x.getSpouse() == address(a)) return false;
+                      }
+                  }
+              }
+              return true;
+          }
+      }
+
+/src/tests/echidna/TaxpayerHarness.sol
+      // SPDX-License-Identifier: UNLICENSED
+      pragma solidity ^0.8.22;
+      
+      import "../../contracts/Taxpayer.sol";
+      
+ *    contract TaxpayerHarness is Taxpayer {
+ *        constructor(address p1, address p2) Taxpayer(p1, p2) {}
+      
+          function getSpouse() external view returns (address) {
+              return spouse;
+          }
+      
+          function getIsMarried() external view returns (bool) {
+              return isMarried;
+          }
+      }
+

@@ -1,0 +1,4 @@
+testLimit:   80000
+seqLen:      80
+shrinkLimit: 8000
+corpusDir:   artifcats/corpus/lottery

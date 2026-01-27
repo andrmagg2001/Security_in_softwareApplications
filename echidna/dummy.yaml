@@ -1,0 +1,4 @@
+testLimit:   2000
+seqLen:      20
+shrinkLimit: 1000
+corpusDir:   artifcats/corpus/dummy

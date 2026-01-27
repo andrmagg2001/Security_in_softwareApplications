@@ -1,0 +1,46 @@
+[2026-01-27 15:36:48.38] Compiling `tests/echidna/Echidna_Taxpayer_P1.sol`... Done! (4.569663877s)
+Analyzing contract: /src/tests/echidna/Echidna_Taxpayer_P1.sol:Echidna_Taxpayer_P1
+[2026-01-27 15:36:52.97] Running slither on `tests/echidna/Echidna_Taxpayer_P1.sol`... Done! (0.849323458s)
+Loaded 3 transaction sequences from artifcats/corpus/taxpayer/reproducers
+Loaded 4 transaction sequences from artifcats/corpus/taxpayer/coverage
+[2026-01-27 15:36:53.94] [Worker 1] New coverage: 1932 instr, 2 contracts, 1 seqs in corpus (act_marry)
+[2026-01-27 15:36:53.94] [Worker 0] New coverage: 1932 instr, 2 contracts, 2 seqs in corpus (act_marry)
+[2026-01-27 15:36:53.95] [Worker 1] Sequence replayed from corpus file 9024994693204049020.txt (1/2)
+[2026-01-27 15:36:53.95] [Worker 0] Sequence replayed from corpus file 8303531284964780953.txt (1/2)
+[2026-01-27 15:36:53.95]  Saved reproducer to artifcats/corpus/taxpayer/coverage/9024994693204049020.txt
+[2026-01-27 15:36:53.95]  Saved reproducer to artifcats/corpus/taxpayer/coverage/8303531284964780953.txt
+[2026-01-27 15:36:53.96] [Worker 0] Sequence replayed from corpus file 2520931460340076782.txt (2/2)
+[2026-01-27 15:36:54.08] [Worker 1] Sequence replayed from corpus file 1736362734192098050.txt (2/2)
+[2026-01-27 15:36:54.08] [Worker 2] New coverage: 2359 instr, 2 contracts, 3 seqs in corpus (act_marry)
+[2026-01-27 15:36:54.08] [Worker 2] Sequence replayed from corpus file 384573544970288504.txt (1/2)
+[2026-01-27 15:36:54.09] [Worker 3] New coverage: 2359 instr, 2 contracts, 4 seqs in corpus (act_divorce)
+[2026-01-27 15:36:54.09] [Worker 3] Sequence replayed from corpus file 5559833381602380752.txt (1/1)
+[2026-01-27 15:36:54.19] [Worker 2] Sequence replayed from corpus file 5157168548282803043.txt (2/2)
+[2026-01-27 15:36:56.88] [status] tests: 0/3, fuzzing: 5473/50000, values: [], cov: 2359, corpus: 4, gas/s: 77670211
+[2026-01-27 15:36:59.89] [status] tests: 0/3, fuzzing: 10942/50000, values: [], cov: 2359, corpus: 4, gas/s: 76961226
+[2026-01-27 15:37:02.89] [status] tests: 0/3, fuzzing: 16407/50000, values: [], cov: 2359, corpus: 4, gas/s: 76902070
+[2026-01-27 15:37:05.90] [status] tests: 0/3, fuzzing: 21812/50000, values: [], cov: 2359, corpus: 4, gas/s: 76114486
+[2026-01-27 15:37:08.90] [status] tests: 0/3, fuzzing: 27354/50000, values: [], cov: 2359, corpus: 4, gas/s: 77875115
+[2026-01-27 15:37:11.90] [status] tests: 0/3, fuzzing: 32756/50000, values: [], cov: 2359, corpus: 4, gas/s: 76726136
+[2026-01-27 15:37:14.91] [status] tests: 0/3, fuzzing: 38215/50000, values: [], cov: 2359, corpus: 4, gas/s: 76600391
+[2026-01-27 15:37:17.92] [status] tests: 0/3, fuzzing: 43667/50000, values: [], cov: 2359, corpus: 4, gas/s: 76717016
+[2026-01-27 15:37:20.65] [Worker 2] Test limit reached. Stopping.
+[2026-01-27 15:37:20.92] [status] tests: 0/3, fuzzing: 49073/50000, values: [], cov: 2359, corpus: 4, gas/s: 76189453
+[2026-01-27 15:37:20.98] [Worker 3] Test limit reached. Stopping.
+[2026-01-27 15:37:21.47] [Worker 1] Test limit reached. Stopping.
+[2026-01-27 15:37:22.08] [Worker 0] Test limit reached. Stopping.
+[2026-01-27 15:37:22.08] [status] tests: 0/3, fuzzing: 50066/50000, values: [], cov: 2359, corpus: 4, gas/s: 42879529
+echidna_p1_no_self_marriage: passing
+echidna_p1_coherent_unmarried: passing
+echidna_p1_symmetry: passing
+
+Unique instructions: 2359
+Unique codehashes: 2
+Corpus size: 4
+Seed: 4147448147029708937
+Total calls: 50066
+
+[2026-01-27 15:37:22.08] Saving test reproducers... Done! (0.000026709s)
+[2026-01-27 15:37:22.08] Saving corpus... Done! (0.000665333s)
+[2026-01-27 15:37:22.08] Saving foundry reproducers... Done! (0.00017775s)
+[2026-01-27 15:37:22.08] Saving coverage... Done! (0.0379885s)

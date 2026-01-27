@@ -1,0 +1,4 @@
+testLimit:   200000
+seqLen:      100
+shrinkLimit: 10000
+corpusDir:   artifcats/corpus/final

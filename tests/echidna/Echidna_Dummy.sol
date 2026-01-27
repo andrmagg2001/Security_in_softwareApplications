@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity ^0.8.0;
+
+contract EchidnaDummy {
+    uint256 public x;
+
+    function inc() external {x += 1;}
+    function dec() external {x -= 1;}
+
+    // Banal property: true on every uint
+    function echidna_x_non_negative() external view returns (bool) {return x >= 0; }
+    
+}
