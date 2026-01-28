@@ -79,31 +79,43 @@ contract Taxpayer {
     if (spouse != address(0)) {
         address old = spouse;
 
-        // clear my side first
         spouse = address(0);
         isMarried = false;
 
-        // ask the other side to clear (only current spouse can do it)
+        tax_allowance = DEFAULT_ALLOWANCE;
+
         Taxpayer(old).divorceBack();
     } else {
         spouse = address(0);
         isMarried = false;
+        tax_allowance = DEFAULT_ALLOWANCE;
     }
-  }
+}
 
-  function divorceBack() public {
-    // only current spouse can clear
+function divorceBack() public {
     require(msg.sender == spouse, "only spouse");
     spouse = address(0);
     isMarried = false;
-  }
+
+    tax_allowance = DEFAULT_ALLOWANCE;
+}
+
 
   /* Transfer part of tax allowance to own spouse */
   function transferAllowance(uint change) public {
+    require(spouse != address(0), "not married");
+    require(isMarried, "not married");
+    require(change > 0, "zero");
+    require(change <= tax_allowance, "insufficient");
+
+    Taxpayer sp = Taxpayer(spouse);
+
+    require(sp.isContract(), "spouse not contract");
+    require(sp.getSpouseForSSA() == address(this), "not reciprocal");
+
     tax_allowance = tax_allowance - change;
-    Taxpayer sp = Taxpayer(address(spouse));
-    sp.setTaxAllowance(sp.getTaxAllowance()+change);
-  }
+    sp.setTaxAllowance(sp.getTaxAllowance() + change);
+}
 
   function haveBirthday() public {
     age++;

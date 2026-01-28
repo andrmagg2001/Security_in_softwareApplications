@@ -1,0 +1,88 @@
+[2026-01-28 14:55:43.27] Compiling `tests/echidna/Echidna_Taxpayer_P2.sol`... Done! (7.681403879s)
+Analyzing contract: /src/tests/echidna/Echidna_Taxpayer_P2.sol:Echidna_Taxpayer_P2
+[2026-01-28 14:55:50.98] Running slither on `tests/echidna/Echidna_Taxpayer_P2.sol`... Done! (0.857768s)
+Loaded 0 transaction sequences from artifacts/corpus/taxpayer_p2/reproducers
+Loaded 0 transaction sequences from artifacts/corpus/taxpayer_p2/coverage
+[2026-01-28 14:55:51.97] [Worker 0] Test echidna_p2_unmarried_baseline_5000 falsified!
+  Call sequence:
+Echidna_Taxpayer_P2.act_marry(160,198) from: 0x0000000000000000000000000000000000030000 Time delay: 315375 seconds Block delay: 23885
+Echidna_Taxpayer_P2.act_transfer(255,4998) from: 0x0000000000000000000000000000000000020000 Time delay: 322178 seconds Block delay: 2512
+Echidna_Taxpayer_P2.act_transfer(253,48054) from: 0x0000000000000000000000000000000000030000 Time delay: 6997 seconds Block delay: 58507
+Echidna_Taxpayer_P2.act_marry(212,62) from: 0x0000000000000000000000000000000000030000 Time delay: 490448 seconds Block delay: 53349
+Echidna_Taxpayer_P2.act_transfer(16,15309) from: 0x0000000000000000000000000000000000020000 Time delay: 525476 seconds Block delay: 45261
+Echidna_Taxpayer_P2.act_transfer(107,98) from: 0x0000000000000000000000000000000000020000 Time delay: 249665 seconds Block delay: 60364
+Echidna_Taxpayer_P2.act_divorce(202) from: 0x0000000000000000000000000000000000010000 Time delay: 82672 seconds Block delay: 54155
+
+[2026-01-28 14:55:51.97] [Worker 0] Test echidna_p2_pooling_conservation_sum_10000 falsified!
+  Call sequence:
+Echidna_Taxpayer_P2.act_marry(160,198) from: 0x0000000000000000000000000000000000030000 Time delay: 315375 seconds Block delay: 23885
+Echidna_Taxpayer_P2.act_transfer(255,4998) from: 0x0000000000000000000000000000000000020000 Time delay: 322178 seconds Block delay: 2512
+Echidna_Taxpayer_P2.act_transfer(253,48054) from: 0x0000000000000000000000000000000000030000 Time delay: 6997 seconds Block delay: 58507
+Echidna_Taxpayer_P2.act_marry(212,62) from: 0x0000000000000000000000000000000000030000 Time delay: 490448 seconds Block delay: 53349
+Echidna_Taxpayer_P2.act_transfer(16,15309) from: 0x0000000000000000000000000000000000020000 Time delay: 525476 seconds Block delay: 45261
+Echidna_Taxpayer_P2.act_transfer(107,98) from: 0x0000000000000000000000000000000000020000 Time delay: 249665 seconds Block delay: 60364
+Echidna_Taxpayer_P2.act_divorce(202) from: 0x0000000000000000000000000000000000010000 Time delay: 82672 seconds Block delay: 54155
+Echidna_Taxpayer_P2.act_divorce(97) from: 0x0000000000000000000000000000000000030000 Time delay: 303345 seconds Block delay: 97
+Echidna_Taxpayer_P2.act_divorce(152) from: 0x0000000000000000000000000000000000010000 Time delay: 7001 seconds Block delay: 4921
+Echidna_Taxpayer_P2.act_transfer(104,1868) from: 0x0000000000000000000000000000000000010000 Time delay: 199 seconds Block delay: 488
+Echidna_Taxpayer_P2.act_marry(122,6) from: 0x0000000000000000000000000000000000020000 Time delay: 486781 seconds Block delay: 22
+
+[2026-01-28 14:55:51.98]  Saved reproducer to artifacts/corpus/taxpayer_p2/reproducers-unshrunk/2471461695622133479.txt
+[2026-01-28 14:55:51.98]  Saved reproducer to artifacts/corpus/taxpayer_p2/reproducers-unshrunk/2930454073076335746.txt
+[2026-01-28 14:55:51.99] [Worker 0] New coverage: 3254 instr, 2 contracts, 1 seqs in corpus (act_divorce)
+[2026-01-28 14:55:51.99] [Worker 2] New coverage: 3254 instr, 2 contracts, 2 seqs in corpus (act_marry)
+[2026-01-28 14:55:51.99] [Worker 1] New coverage: 3254 instr, 2 contracts, 3 seqs in corpus (act_transfer)
+[2026-01-28 14:55:52.00] [Worker 3] New coverage: 3254 instr, 2 contracts, 4 seqs in corpus (act_transfer)
+[2026-01-28 14:55:52.00]  Saved reproducer to artifacts/corpus/taxpayer_p2/coverage/6460304595394370171.txt
+[2026-01-28 14:55:52.00]  Saved reproducer to artifacts/corpus/taxpayer_p2/coverage/2835266753099683136.txt
+[2026-01-28 14:55:52.00] [Worker 3] Test limit reached. Stopping.
+[2026-01-28 14:55:52.00] [Worker 2] Test limit reached. Stopping.
+[2026-01-28 14:55:52.00] [Worker 1] Test limit reached. Stopping.
+[2026-01-28 14:55:52.00]  Saved reproducer to artifacts/corpus/taxpayer_p2/coverage/4576494060204033818.txt
+[2026-01-28 14:55:52.01]  Saved reproducer to artifacts/corpus/taxpayer_p2/coverage/416951004692052135.txt
+[2026-01-28 14:55:54.88] [status] tests: 2/2, fuzzing: 204/100000, values: [], cov: 3254, corpus: 4, shrinking: W0:1014/5000(4) W0:1014/5000(3), gas/s: 2947526
+[2026-01-28 14:55:57.89] [status] tests: 2/2, fuzzing: 204/100000, values: [], cov: 3254, corpus: 4, shrinking: W0:2074/5000(4) W0:2073/5000(3), gas/s: 0
+[2026-01-28 14:56:00.90] [status] tests: 2/2, fuzzing: 204/100000, values: [], cov: 3254, corpus: 4, shrinking: W0:3110/5000(4) W0:3109/5000(3), gas/s: 0
+[2026-01-28 14:56:03.90] [status] tests: 2/2, fuzzing: 204/100000, values: [], cov: 3254, corpus: 4, shrinking: W0:4136/5000(4) W0:4135/5000(3), gas/s: 0
+[2026-01-28 14:56:06.44] [Worker 0] Test limit reached. Stopping.
+[2026-01-28 14:56:06.44] [status] tests: 2/2, fuzzing: 204/100000, values: [], cov: 3254, corpus: 4, gas/s: 0
+echidna_p2_pooling_conservation_sum_10000: failed!💥  
+  Call sequence:
+    Echidna_Taxpayer_P2.act_marry(2,0)
+    Echidna_Taxpayer_P2.act_transfer(0,1)
+    Echidna_Taxpayer_P2.act_divorce(0)
+    Echidna_Taxpayer_P2.act_marry(0,1)
+
+Traces: 
+call [1mTaxpayerHarness[0m::getSpouse()() [1m(/src/tests/echidna/Echidna_Taxpayer_P2.sol:56)[0m
+ └╴← ([1mTaxpayerHarness[0m)
+call [1mTaxpayerHarness[0m::getSpouse()() [1m(/src/tests/echidna/Echidna_Taxpayer_P2.sol:60)[0m
+ └╴← ([1mTaxpayerHarness[0m)
+call [1mTaxpayerHarness[0m::getTaxAllowance()() [1m(/src/tests/echidna/Echidna_Taxpayer_P2.sol:61)[0m
+ └╴← (5000)
+call [1mTaxpayerHarness[0m::getTaxAllowance()() [1m(/src/tests/echidna/Echidna_Taxpayer_P2.sol:61)[0m
+ └╴← (4999)
+
+echidna_p2_unmarried_baseline_5000: failed!💥  
+  Call sequence:
+    Echidna_Taxpayer_P2.act_marry(0,1)
+    Echidna_Taxpayer_P2.act_transfer(0,1)
+    Echidna_Taxpayer_P2.act_divorce(0)
+
+Traces: 
+call [1mTaxpayerHarness[0m::getSpouse()() [1m(/src/tests/echidna/Echidna_Taxpayer_P2.sol:46)[0m
+ └╴← (0x0000000000000000000000000000000000000000)
+call [1mTaxpayerHarness[0m::getTaxAllowance()() [1m(/src/tests/echidna/Echidna_Taxpayer_P2.sol:47)[0m
+ └╴← (4999)
+
+
+Unique instructions: 3254
+Unique codehashes: 2
+Corpus size: 4
+Seed: 9196248357718934957
+Total calls: 204
+
+[2026-01-28 14:56:06.45] Saving test reproducers... Done! (0.001460958s)
+[2026-01-28 14:56:06.45] Saving corpus... Done! (0.0004925s)
+[2026-01-28 14:56:06.45] Saving foundry reproducers... Done! (0.000194791s)
+[2026-01-28 14:56:06.45] Saving coverage... Done! (0.038339584s)

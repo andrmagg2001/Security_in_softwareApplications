@@ -1,0 +1,48 @@
+[2026-01-28 15:04:42.21] Compiling `tests/echidna/Echidna_Taxpayer_P2.sol`... Done! (4.53864246s)
+Analyzing contract: /src/tests/echidna/Echidna_Taxpayer_P2.sol:Echidna_Taxpayer_P2
+[2026-01-28 15:04:46.77] Running slither on `tests/echidna/Echidna_Taxpayer_P2.sol`... Done! (0.858966001s)
+Loaded 2 transaction sequences from artifacts/corpus/taxpayer_p2/reproducers
+Loaded 4 transaction sequences from artifacts/corpus/taxpayer_p2/coverage
+[2026-01-28 15:04:47.74] [Worker 0] New coverage: 3276 instr, 2 contracts, 1 seqs in corpus (act_divorce)
+[2026-01-28 15:04:47.75] [Worker 0] Sequence replayed from corpus file 525722103941307009.txt (1/2)
+[2026-01-28 15:04:47.75]  Saved reproducer to artifacts/corpus/taxpayer_p2/coverage/525722103941307009.txt
+[2026-01-28 15:04:47.76] [Worker 0] Sequence replayed from corpus file 6463983567893530912.txt (2/2)
+[2026-01-28 15:04:47.82] [Worker 2] New coverage: 3515 instr, 2 contracts, 2 seqs in corpus (act_marry)
+[2026-01-28 15:04:47.82] [Worker 2] Sequence replayed from corpus file 2835266753099683136.txt (1/2)
+[2026-01-28 15:04:47.82] [Worker 3] New coverage: 3515 instr, 2 contracts, 3 seqs in corpus (act_transfer)
+[2026-01-28 15:04:47.83] [Worker 1] New coverage: 3515 instr, 2 contracts, 4 seqs in corpus (act_transfer)
+[2026-01-28 15:04:47.83] [Worker 1] Sequence replayed from corpus file 4576494060204033818.txt (1/2)
+[2026-01-28 15:04:47.83] [Worker 0] New coverage: 3515 instr, 2 contracts, 5 seqs in corpus (act_transfer)
+[2026-01-28 15:04:47.83]  Saved reproducer to artifacts/corpus/taxpayer_p2/coverage/3794198078358896012.txt
+[2026-01-28 15:04:47.83]  Saved reproducer to artifacts/corpus/taxpayer_p2/coverage/1333575245349444165.txt
+[2026-01-28 15:04:47.88] [Worker 2] Sequence replayed from corpus file 416951004692052135.txt (2/2)
+[2026-01-28 15:04:47.89] [Worker 1] New coverage: 3519 instr, 2 contracts, 6 seqs in corpus (act_divorce)
+[2026-01-28 15:04:47.89] [Worker 1] Sequence replayed from corpus file 6460304595394370171.txt (2/2)
+[2026-01-28 15:04:48.09] [Worker 3] New coverage: 3522 instr, 2 contracts, 7 seqs in corpus (act_marry)
+[2026-01-28 15:04:48.09]  Saved reproducer to artifacts/corpus/taxpayer_p2/coverage/3122440941519513358.txt
+[2026-01-28 15:04:50.69] [status] tests: 0/2, fuzzing: 12015/100000, values: [], cov: 3522, corpus: 7, gas/s: 188299570
+[2026-01-28 15:04:53.70] [status] tests: 0/2, fuzzing: 22190/100000, values: [], cov: 3522, corpus: 7, gas/s: 159095894
+[2026-01-28 15:04:56.71] [status] tests: 0/2, fuzzing: 33766/100000, values: [], cov: 3522, corpus: 7, gas/s: 180340453
+[2026-01-28 15:04:59.72] [status] tests: 0/2, fuzzing: 45809/100000, values: [], cov: 3522, corpus: 7, gas/s: 188372902
+[2026-01-28 15:05:02.72] [status] tests: 0/2, fuzzing: 58043/100000, values: [], cov: 3522, corpus: 7, gas/s: 190813094
+[2026-01-28 15:05:05.73] [status] tests: 0/2, fuzzing: 69931/100000, values: [], cov: 3522, corpus: 7, gas/s: 185607663
+[2026-01-28 15:05:08.73] [status] tests: 0/2, fuzzing: 81642/100000, values: [], cov: 3522, corpus: 7, gas/s: 182737379
+[2026-01-28 15:05:11.73] [status] tests: 0/2, fuzzing: 93833/100000, values: [], cov: 3522, corpus: 7, gas/s: 189816810
+[2026-01-28 15:05:12.30] [Worker 3] Test limit reached. Stopping.
+[2026-01-28 15:05:12.96] [Worker 2] Test limit reached. Stopping.
+[2026-01-28 15:05:13.62] [Worker 1] Test limit reached. Stopping.
+[2026-01-28 15:05:14.08] [Worker 0] Test limit reached. Stopping.
+[2026-01-28 15:05:14.08] [status] tests: 0/2, fuzzing: 100126/100000, values: [], cov: 3522, corpus: 7, gas/s: 148355892
+echidna_p2_pooling_conservation_sum_10000: passing
+echidna_p2_unmarried_baseline_5000: passing
+
+Unique instructions: 3522
+Unique codehashes: 2
+Corpus size: 7
+Seed: 1794435571761168028
+Total calls: 100126
+
+[2026-01-28 15:05:14.08] Saving test reproducers... Done! (0.000024792s)
+[2026-01-28 15:05:14.08] Saving corpus... Done! (0.000819s)
+[2026-01-28 15:05:14.08] Saving foundry reproducers... Done! (0.000182375s)
+[2026-01-28 15:05:14.08] Saving coverage... Done! (0.045078041s)
