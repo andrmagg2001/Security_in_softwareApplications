@@ -1,4 +1,4 @@
 testLimit:    100000
 seqLen:       50
 shrinkLimit:  5000
-corpusDir:    artifacts/corpus/taxpayer_p2
+corpusDir:    artifacts/corpus/taxpayer_p3

@@ -10,20 +10,16 @@ contract Taxpayer {
 
   bool iscontract;
 
-  /* Reference to spouse if person is married, address(0) otherwise */
   address spouse; 
 
 
   address  parent1; 
   address  parent2; 
 
-  /* Constant default income tax allowance */
   uint constant  DEFAULT_ALLOWANCE = 5000;
 
-  /* Constant income tax allowance for Older Taxpayers over 65 */
   uint constant ALLOWANCE_OAP = 7000;
 
-  /* Income tax allowance */
   uint tax_allowance; 
 
   uint income; 
@@ -31,7 +27,6 @@ contract Taxpayer {
   uint256 rev;
 
 
-  //Parents are taxpayers
   constructor(address p1, address p2) {
     age = 0;
     isMarried = false;
@@ -44,7 +39,6 @@ contract Taxpayer {
   } 
 
 
-  //We require new_spouse != address(0);
   function marry(address new_spouse) public {
     require(new_spouse != address(0), "invalid spouse");
     require(new_spouse != address(this), "self marriage");
@@ -52,21 +46,17 @@ contract Taxpayer {
 
     Taxpayer sp = Taxpayer(new_spouse);
 
-    // partner must be free
     require(!sp.getIsMarriedForSSA(), "spouse already married");
     require(sp.getSpouseForSSA() == address(0), "spouse already married");
 
-    // set my side
     spouse = new_spouse;
     isMarried = true;
 
-    // set other side (one-way sync, no recursion)
     sp.marryBack(address(this));
 
   }
 
   function marryBack(address other) public {
-    // only the "other" contract can finalize on this side
     require(msg.sender == other, "only spouse");
     require(other != address(0) && other != address(this), "invalid other");
     require(!isMarried && spouse == address(0), "already married");
@@ -74,56 +64,88 @@ contract Taxpayer {
     spouse = other;
     isMarried = true;
 }
+
+  function _baselineAllowance() internal view returns (uint) {
+    return (age >= 65) ? ALLOWANCE_OAP : DEFAULT_ALLOWANCE;
+  }
+
+  function _refreshAllowanceFloor() internal {
+      uint base = _baselineAllowance();
+      if (tax_allowance < base) {
+          tax_allowance = base;
+      }
+  }
  
   function divorce() public {
     if (spouse != address(0)) {
-        address old = spouse;
+      address old = spouse;
+      Taxpayer oldTp = Taxpayer(old);
 
-        spouse = address(0);
-        isMarried = false;
+      require(oldTp.getSpouseForSSA() == address(this), "not reciprocal");
 
-        tax_allowance = DEFAULT_ALLOWANCE;
+      spouse = address(0);
+      isMarried = false;
 
-        Taxpayer(old).divorceBack();
+      tax_allowance = _baselineAllowance();
+
+      oldTp.divorceBack(address(this));
     } else {
-        spouse = address(0);
-        isMarried = false;
-        tax_allowance = DEFAULT_ALLOWANCE;
+      spouse = address(0);
+      isMarried = false;
+      tax_allowance = _baselineAllowance();
     }
-}
+  } 
 
-function divorceBack() public {
-    require(msg.sender == spouse, "only spouse");
+  function divorceBack(address expectedSpouse) public {
+    require(msg.sender == expectedSpouse, "only spouse");
+    require(spouse == expectedSpouse, "not reciprocal");
+
     spouse = address(0);
     isMarried = false;
 
-    tax_allowance = DEFAULT_ALLOWANCE;
-}
+    tax_allowance = _baselineAllowance();
+  }
+
+  function divorceBack() public {
+    divorceBack(msg.sender);
+  }
 
 
-  /* Transfer part of tax allowance to own spouse */
   function transferAllowance(uint change) public {
-    require(spouse != address(0), "not married");
-    require(isMarried, "not married");
-    require(change > 0, "zero");
-    require(change <= tax_allowance, "insufficient");
+      require(isMarried, "not married");
+      require(spouse != address(0), "no spouse");
+      require(change > 0, "zero");
+      require(change <= tax_allowance, "insufficient");
 
-    Taxpayer sp = Taxpayer(spouse);
+      if (age >= 65) {
+          require(tax_allowance - change >= ALLOWANCE_OAP, "OAP min allowance");
+      }
 
-    require(sp.isContract(), "spouse not contract");
-    require(sp.getSpouseForSSA() == address(this), "not reciprocal");
+      Taxpayer sp = Taxpayer(spouse);
 
-    tax_allowance = tax_allowance - change;
-    sp.setTaxAllowance(sp.getTaxAllowance() + change);
-}
+      require(sp.isContract(), "spouse not contract");
+      require(sp.getSpouseForSSA() == address(this), "not reciprocal");
+
+      tax_allowance -= change;
+
+      sp.setTaxAllowance(sp.getTaxAllowance() + change);
+  }
 
   function haveBirthday() public {
     age++;
+    _refreshAllowanceFloor();
+
   }
- 
+
   function setTaxAllowance(uint ta) public {
     require(Taxpayer(msg.sender).isContract() || Lottery(msg.sender).isContract());
-    tax_allowance = ta;
+
+    uint base = _baselineAllowance();
+    if (ta < base) {
+      tax_allowance = base;
+    } else {
+      tax_allowance = ta;
+    }
   }
 
   function getTaxAllowance() public view returns(uint) {

@@ -1,0 +1,50 @@
+[2026-01-29 11:15:46.03] Compiling `tests/echidna/Echidna_Taxpayer_P3.sol`... Done! (4.932671085s)
+Analyzing contract: /src/tests/echidna/Echidna_Taxpayer_P3.sol:Echidna_Taxpayer_P3
+[2026-01-29 11:15:50.98] Running slither on `tests/echidna/Echidna_Taxpayer_P3.sol`... Done! (0.916079626s)
+Loaded 3 transaction sequences from artifacts/corpus/taxpayer_p3/reproducers
+Loaded 7 transaction sequences from artifacts/corpus/taxpayer_p3/coverage
+[2026-01-29 11:15:52.03] [Worker 0] New coverage: 3064 instr, 2 contracts, 1 seqs in corpus (act_age)
+[2026-01-29 11:15:52.04] [Worker 3] New coverage: 3202 instr, 2 contracts, 2 seqs in corpus (act_transfer)
+[2026-01-29 11:15:52.04] [Worker 3] Sequence replayed from corpus file 6434360483872891218.txt (1/1)
+[2026-01-29 11:15:52.04] [Worker 0] Sequence replayed from corpus file 8721509521934221778.txt (1/3)
+[2026-01-29 11:15:52.05] [Worker 0] Sequence replayed from corpus file 8778614177192588947.txt (2/3)
+[2026-01-29 11:15:52.06] [Worker 0] Sequence replayed from corpus file 6434360483872891218.txt (3/3)
+[2026-01-29 11:15:52.12] [Worker 2] New coverage: 3970 instr, 2 contracts, 3 seqs in corpus (act_transfer)
+[2026-01-29 11:15:52.12] [Worker 2] Sequence replayed from corpus file 3152722794517494579.txt (1/3)
+[2026-01-29 11:15:52.12] [Worker 1] New coverage: 3970 instr, 2 contracts, 4 seqs in corpus (act_divorce)
+[2026-01-29 11:15:52.12] [Worker 1] Sequence replayed from corpus file 2782073808689035967.txt (1/3)
+[2026-01-29 11:15:52.13] [Worker 1] Sequence replayed from corpus file 8721509521934221778.txt (2/3)
+[2026-01-29 11:15:52.18] [Worker 2] Sequence replayed from corpus file 2267135516840612406.txt (2/3)
+[2026-01-29 11:15:52.18] [Worker 1] Sequence replayed from corpus file 3238670351959281726.txt (3/3)
+[2026-01-29 11:15:52.22] [Worker 2] Sequence replayed from corpus file 9150336524182103017.txt (3/3)
+[2026-01-29 11:15:52.24] [Worker 3] New coverage: 3982 instr, 2 contracts, 5 seqs in corpus (act_divorce)
+[2026-01-29 11:15:52.24]  Saved reproducer to artifacts/corpus/taxpayer_p3/coverage/1254197569560215252.txt
+[2026-01-29 11:15:52.37] [Worker 2] New coverage: 3986 instr, 2 contracts, 6 seqs in corpus (act_marry)
+[2026-01-29 11:15:52.37]  Saved reproducer to artifacts/corpus/taxpayer_p3/coverage/1913117178508540721.txt
+[2026-01-29 11:15:52.53] [Worker 2] New coverage: 3989 instr, 2 contracts, 7 seqs in corpus (act_age)
+[2026-01-29 11:15:52.54]  Saved reproducer to artifacts/corpus/taxpayer_p3/coverage/5145844914495826641.txt
+[2026-01-29 11:15:54.96] [status] tests: 0/1, fuzzing: 12340/100000, values: [], cov: 3989, corpus: 7, gas/s: 283913441
+[2026-01-29 11:15:57.97] [status] tests: 0/1, fuzzing: 24556/100000, values: [], cov: 3989, corpus: 7, gas/s: 279709858
+[2026-01-29 11:16:00.98] [status] tests: 0/1, fuzzing: 36716/100000, values: [], cov: 3989, corpus: 7, gas/s: 277762968
+[2026-01-29 11:16:03.98] [status] tests: 0/1, fuzzing: 48732/100000, values: [], cov: 3989, corpus: 7, gas/s: 275009186
+[2026-01-29 11:16:06.98] [status] tests: 0/1, fuzzing: 61082/100000, values: [], cov: 3989, corpus: 7, gas/s: 280977809
+[2026-01-29 11:16:09.98] [status] tests: 0/1, fuzzing: 73194/100000, values: [], cov: 3989, corpus: 7, gas/s: 276613710
+[2026-01-29 11:16:12.99] [status] tests: 0/1, fuzzing: 85063/100000, values: [], cov: 3989, corpus: 7, gas/s: 273334654
+[2026-01-29 11:16:13.66] [Worker 2] Test limit reached. Stopping.
+[2026-01-29 11:16:15.99] [status] tests: 0/1, fuzzing: 94588/100000, values: [], cov: 3989, corpus: 7, gas/s: 222892608
+[2026-01-29 11:16:17.71] [Worker 0] Test limit reached. Stopping.
+[2026-01-29 11:16:17.85] [Worker 3] Test limit reached. Stopping.
+[2026-01-29 11:16:18.04] [Worker 1] Test limit reached. Stopping.
+[2026-01-29 11:16:18.04] [status] tests: 0/1, fuzzing: 100107/100000, values: [], cov: 3989, corpus: 7, gas/s: 194775379
+echidna_p3_oap_min_7000: passing
+
+Unique instructions: 3989
+Unique codehashes: 2
+Corpus size: 7
+Seed: 5975383218595574084
+Total calls: 100107
+
+[2026-01-29 11:16:18.04] Saving test reproducers... Done! (0.000025459s)
+[2026-01-29 11:16:18.04] Saving corpus... Done! (0.000837208s)
+[2026-01-29 11:16:18.04] Saving foundry reproducers... Done! (0.000228916s)
+[2026-01-29 11:16:18.04] Saving coverage... Done! (0.07258175s)

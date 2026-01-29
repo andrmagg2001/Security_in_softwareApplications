@@ -8,9 +8,16 @@ contract TaxpayerHarness is Taxpayer {
 
     function getSpouse() external view returns (address) {
         return spouse;
+    
     }
 
     function getIsMarried() external view returns (bool) {
         return isMarried;
+    
+    }
+
+    function getAge() external view returns (uint) {
+        return age;
+
     }
 }
