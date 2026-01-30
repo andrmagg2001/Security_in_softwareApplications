@@ -1,0 +1,35 @@
+[2026-01-30 17:41:44.85] Compiling `tests/echidna/Echidna_All.sol`... Done! (5.22712817s)
+Analyzing contract: /src/tests/echidna/Echidna_All.sol:Echidna_All
+[2026-01-30 17:41:50.11] Running slither on `tests/echidna/Echidna_All.sol`... Done! (0.923998083s)
+Loaded 0 transaction sequences from artifacts/corpus/all/reproducers
+Loaded 0 transaction sequences from artifacts/corpus/all/coverage
+[2026-01-30 17:41:51.26] [Worker 3] New coverage: 3746 instr, 2 contracts, 1 seqs in corpus (act_divorce)
+[2026-01-30 17:41:51.27] [Worker 0] New coverage: 3746 instr, 2 contracts, 2 seqs in corpus (act_transfer)
+[2026-01-30 17:41:51.27] [Worker 1] New coverage: 3746 instr, 2 contracts, 3 seqs in corpus (act_transfer)
+[2026-01-30 17:41:51.27] [Worker 2] New coverage: 3746 instr, 2 contracts, 4 seqs in corpus (act_marry)
+[2026-01-30 17:41:51.28]  Saved reproducer to artifacts/corpus/all/coverage/463628282592864799.txt
+[2026-01-30 17:41:51.29]  Saved reproducer to artifacts/corpus/all/coverage/1828487408980152284.txt
+[2026-01-30 17:41:51.29]  Saved reproducer to artifacts/corpus/all/coverage/8556538670819366406.txt
+[2026-01-30 17:41:51.29]  Saved reproducer to artifacts/corpus/all/coverage/928326963770700327.txt
+[2026-01-30 17:41:54.08] [status] tests: 0/5, fuzzing: 8818/10000, values: [], cov: 3746, corpus: 4, gas/s: 140497644
+[2026-01-30 17:41:54.48] [Worker 1] Test limit reached. Stopping.
+[2026-01-30 17:41:54.49] [Worker 0] Test limit reached. Stopping.
+[2026-01-30 17:41:54.51] [Worker 2] Test limit reached. Stopping.
+[2026-01-30 17:41:54.52] [Worker 3] Test limit reached. Stopping.
+[2026-01-30 17:41:54.52] [status] tests: 0/5, fuzzing: 10126/10000, values: [], cov: 3746, corpus: 4, gas/s: 0
+echidna_all_pooling_sum_equals_baseline_sum: passing
+echidna_all_unmarried_baseline: passing
+echidna_all_oap_min_7000: passing
+echidna_all_symmetry: passing
+echidna_all_no_self_marriage: passing
+
+Unique instructions: 3746
+Unique codehashes: 2
+Corpus size: 4
+Seed: 7124143078401558652
+Total calls: 10126
+
+[2026-01-30 17:41:54.52] Saving test reproducers... Done! (0.000028958s)
+[2026-01-30 17:41:54.52] Saving corpus... Done! (0.000711666s)
+[2026-01-30 17:41:54.53] Saving foundry reproducers... Done! (0.000189667s)
+[2026-01-30 17:41:54.53] Saving coverage... Done! (0.064165375s)

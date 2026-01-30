@@ -71,6 +71,21 @@ The fix introduced an age-aware baseline and a refresh step whenever state chang
 
 After applying the fix, the property passes under a 100,000-test run.
 
+### 5) Taxpayer — Consolidation (Echidna_All: P1–P3 together)
+
+After finishing Parts 1–3, the properties were consolidated into a single Echidna suite (`Echidna_All.sol`) to ensure that **all invariants hold together** in the same state space.
+
+#### Properties consolidated
+- Symmetry
+- No self-marriage
+- Unmarried baseline (age-aware)
+- OAP minimum allowance (age ≥ 65 ⇒ allowance ≥ 7000)
+- Pooling conservation for reciprocal spouses (sum equals the baseline sum)
+
+#### Runs executed
+- Smoke run (quick regression): log saved as `artifacts/logs/all_smoke.txt`
+- Release evidence (long run, 300k calls): log saved as `artifacts/logs/all_release.txt`
+
 ## How to reproduce
 
 ### Prerequisites
@@ -126,15 +141,47 @@ docker run --rm --platform linux/amd64 \
   | tee artifacts/logs/taxpayer_p3_run.txt
 ```
 
+### 5) Taxpayer Consolidation (All: P1–P3 together)
+
+Smoke run:
+
+```bash
+docker run --rm --platform linux/amd64 \
+  -v "$PWD":/src -w /src \
+  trailofbits/echidna:latest \
+  echidna-test tests/echidna/Echidna_All.sol \
+    --config echidna/all.yaml \
+    --contract Echidna_All \
+  | tee artifacts/logs/all_smoke.txt
+```
+
+Release evidence (long run):
+
+```bash
+docker run --rm --platform linux/amd64 \
+  -v "$PWD":/src -w /src \
+  trailofbits/echidna:latest \
+  echidna-test tests/echidna/Echidna_All.sol \
+    --config echidna/all.yaml \
+    --contract Echidna_All \
+  | tee artifacts/logs/all_release.txt
+```
+
+Notes:
+- `echidna/all.yaml` should set a higher `testLimit` (e.g., 300000) for the release run.
+- Minor `Ticker: poll failed: Interrupted system call` messages may appear; they do not affect correctness.
+
 ## Evidence locations
 
 ### Logs
 - `artifacts/logs/taxpayer_p1_fail.txt` (failing run)
 - `artifacts/logs/taxpayer_p1_pass.txt` (passing run)
-- artifacts/logs/taxpayer_p2_fail.txt (failing run)
-- artifacts/logs/taxpayer_p2_pass.txt (passing run)
-- artifacts/logs/taxpayer_p3_fail.txt` (failing run)
-- artifacts/logs/taxpayer_p3_pass.txt` (passing run)
+- `artifacts/logs/taxpayer_p2_fail.txt` (failing run)
+- `artifacts/logs/taxpayer_p2_pass.txt` (passing run)
+- `artifacts/logs/taxpayer_p3_fail.txt` (failing run)
+- `artifacts/logs/taxpayer_p3_pass.txt` (passing run)
+- `artifacts/logs/all_smoke.txt` (smoke run)
+- `artifacts/logs/all_release.txt` (release evidence, long run)
 
 ### Screenshots
 - `artifacts/screenshots/p1_fail_no_self.png`
@@ -147,6 +194,8 @@ docker run --rm --platform linux/amd64 \
 - artifacts/screenshots/p2_pass_seed.png
 - `artifacts/screenshots/p3_fail_oap_min_7000.png`
 - `artifacts/screenshots/p3_pass_oap_min_7000.png`
+- `artifacts/screenshots/all_smoke_pass.png`
+- `artifacts/screenshots/all_release_pass.png`
 
 ### Embedded screenshots
 ![P1 FAIL - no self marriage](artifacts/screenshots/p1_fail_no_self.png)
@@ -159,6 +208,8 @@ docker run --rm --platform linux/amd64 \
 ![P2 PASS - seed and total calls](artifacts/screenshots/p2_pass_seed.png)
 ![P3 FAIL - OAP min 7000](artifacts/screenshots/p3_fail_oap_min_7000.png)
 ![P3 PASS - OAP min 7000](artifacts/screenshots/p3_pass_oap_min_7000.png)
+![ALL SMOKE PASS](artifacts/screenshots/all_smoke_pass.png)
+![ALL RELEASE PASS](artifacts/screenshots/all_release_pass.png)
 
 ### Corpus
 - `artifacts/corpus/taxpayer_p1/`
@@ -170,3 +221,4 @@ docker run --rm --platform linux/amd64 \
 - Taxpayer Part 1 (P1): completed (properties implemented, counterexamples captured, fixes applied, re-test passing)
 - Taxpayer Part 2 (P2): completed (properties implemented, counterexamples captured, fixes applied, re-test passing)
 - Taxpayer Part 3 (P3): completed (properties implemented, counterexamples captured, fixes applied, re-test passing)
+- Taxpayer Consolidation (All: P1–P3 together): completed (smoke + long run release evidence passing)
