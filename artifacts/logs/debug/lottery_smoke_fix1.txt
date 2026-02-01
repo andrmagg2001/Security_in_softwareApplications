@@ -1,0 +1,42 @@
+[2026-02-01 17:26:05.67] Compiling `tests/echidna/Echidna_Lottery.sol`... Done! (4.888660294s)
+Analyzing contract: /src/tests/echidna/Echidna_Lottery.sol:Echidna_Lottery
+[2026-02-01 17:26:10.59] Running slither on `tests/echidna/Echidna_Lottery.sol`... Done! (0.909599167s)
+Loaded 3 transaction sequences from artifacts/corpus/lottery/reproducers
+Loaded 4 transaction sequences from artifacts/corpus/lottery/coverage
+[2026-02-01 17:26:11.61] [Worker 1] New coverage: 3524 instr, 3 contracts, 1 seqs in corpus (act_end)
+[2026-02-01 17:26:11.61] [Worker 0] New coverage: 3524 instr, 3 contracts, 2 seqs in corpus (act_commit)
+[2026-02-01 17:26:11.62] [Worker 1] Sequence replayed from corpus file 5141865411916094771.txt (1/2)
+[2026-02-01 17:26:11.62] [Worker 0] Sequence replayed from corpus file 3342913042022358190.txt (1/2)
+[2026-02-01 17:26:11.62] [Worker 0] Sequence replayed from corpus file 4945774945827925688.txt (2/2)
+[2026-02-01 17:26:11.62]  Saved reproducer to artifacts/corpus/lottery/coverage/5141865411916094771.txt
+[2026-02-01 17:26:11.62]  Saved reproducer to artifacts/corpus/lottery/coverage/3342913042022358190.txt
+[2026-02-01 17:26:11.65] [Worker 3] New coverage: 3527 instr, 3 contracts, 3 seqs in corpus (act_reveal)
+[2026-02-01 17:26:11.65] [Worker 3] Sequence replayed from corpus file 657369188370041095.txt (1/1)
+[2026-02-01 17:26:11.65] [Worker 2] New coverage: 3527 instr, 3 contracts, 4 seqs in corpus (act_commit)
+[2026-02-01 17:26:11.65] [Worker 2] Sequence replayed from corpus file 6554036862187827302.txt (1/2)
+[2026-02-01 17:26:11.67] [Worker 1] New coverage: 3527 instr, 3 contracts, 5 seqs in corpus (act_commit)
+[2026-02-01 17:26:11.67] [Worker 1] Sequence replayed from corpus file 1368460427354532064.txt (2/2)
+[2026-02-01 17:26:11.69] [Worker 2] Sequence replayed from corpus file 6345365862727314880.txt (2/2)
+[2026-02-01 17:26:11.76] [Worker 0] New coverage: 3530 instr, 3 contracts, 6 seqs in corpus (act_reveal)
+[2026-02-01 17:26:11.76]  Saved reproducer to artifacts/corpus/lottery/coverage/7182594147947241027.txt
+[2026-02-01 17:26:14.55] [status] tests: 0/3, fuzzing: 31098/80000, values: [], cov: 3530, corpus: 6, gas/s: 486237029
+[2026-02-01 17:26:17.55] [status] tests: 0/3, fuzzing: 61216/80000, values: [], cov: 3530, corpus: 6, gas/s: 471210412
+[2026-02-01 17:26:19.42] [Worker 3] Test limit reached. Stopping.
+[2026-02-01 17:26:19.43] [Worker 1] Test limit reached. Stopping.
+[2026-02-01 17:26:19.43] [Worker 2] Test limit reached. Stopping.
+[2026-02-01 17:26:19.44] [Worker 0] Test limit reached. Stopping.
+[2026-02-01 17:26:19.44] [status] tests: 0/3, fuzzing: 80123/80000, values: [], cov: 3530, corpus: 6, gas/s: 444066214
+echidna_L3_unique_reveals: passing
+echidna_L2_no_commit_when_not_started: passing
+echidna_L1_binding: passing
+
+Unique instructions: 3530
+Unique codehashes: 3
+Corpus size: 6
+Seed: 1703683348862182714
+Total calls: 80123
+
+[2026-02-01 17:26:19.44] Saving test reproducers... Done! (0.000028375s)
+[2026-02-01 17:26:19.44] Saving corpus... Done! (0.000869125s)
+[2026-02-01 17:26:19.44] Saving foundry reproducers... Done! (0.000179417s)
+[2026-02-01 17:26:19.44] Saving coverage... Done! (0.057473875s)

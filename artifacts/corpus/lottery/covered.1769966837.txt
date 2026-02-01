@@ -1,0 +1,414 @@
+/src/contracts/Lottery.sol
+      // SPDX-License-Identifier: UNLICENSED
+      pragma solidity ^0.8.22;
+      
+      import "./Taxpayer.sol";
+      
+      contract Lottery {
+          address owner;
+      
+          mapping(address => bytes32) commits;
+          mapping(address => uint256) reveals;
+          mapping(address => bool) committed;
+          mapping(address => bool) revealedOnce;
+      
+          address[] revealed;
+      
+          uint256 startTime;
+          uint256 revealTime;
+          uint256 endTime;
+          uint256 period;
+      
+          bool iscontract;
+      
+ *        constructor(uint256 p) {
+ *            owner = msg.sender;
+ *            period = p;
+ *            startTime = 0;
+ *            revealTime = 0;
+ *            endTime = 0;
+ *            iscontract = true;
+          }
+      
+ *        function startLottery() public {
+ *            require(startTime == 0, "already started");
+ *            startTime = block.timestamp;
+ *            revealTime = startTime + period;
+ *            endTime = revealTime + period;
+          }
+      
+ *        function commit(bytes32 y) public {
+ *            require(startTime != 0, "not started");
+ *            require(block.timestamp < revealTime, "commit closed");
+ *            require(!committed[msg.sender], "already committed");
+      
+ *            commits[msg.sender] = y;
+ *            committed[msg.sender] = true;
+          }
+      
+ *        function reveal(uint256 rev) public {
+ *            require(startTime != 0, "not started");
+ *            require(block.timestamp >= revealTime, "reveal not open");
+ *            require(block.timestamp < endTime, "reveal closed");
+              require(committed[msg.sender], "no commit");
+              require(!revealedOnce[msg.sender], "already revealed");
+              require(keccak256(abi.encode(rev)) == commits[msg.sender], "invalid reveal");
+      
+              revealedOnce[msg.sender] = true;
+              reveals[msg.sender] = rev;
+              revealed.push(msg.sender);
+          }
+      
+          function endLottery() public {
+              require(startTime != 0, "not started");
+              require(block.timestamp >= endTime, "too early");
+              require(revealed.length > 0, "no reveals");
+      
+              uint256 total = 0;
+              for (uint256 i = 0; i < revealed.length; i++) {
+                  total += reveals[revealed[i]];
+              }
+      
+              address winner = revealed[total % revealed.length];
+              Taxpayer(winner).setTaxAllowance(7000);
+      
+              for (uint256 i = 0; i < revealed.length; i++) {
+                  address a = revealed[i];
+                  delete commits[a];
+                  delete reveals[a];
+                  committed[a] = false;
+                  revealedOnce[a] = false;
+              }
+      
+              delete revealed;
+      
+              startTime = 0;
+              revealTime = 0;
+              endTime = 0;
+          }
+      
+          function isContract() public view returns (bool) {
+              return iscontract;
+          }
+      }
+
+/src/contracts/Taxpayer.sol
+      pragma solidity ^0.8.22;
+      
+      import "./Lottery.sol";
+      
+      contract Taxpayer {
+      
+        uint age; 
+      
+        bool isMarried; 
+      
+        bool iscontract;
+      
+        address spouse; 
+      
+      
+        address  parent1; 
+        address  parent2; 
+      
+ *      uint constant  DEFAULT_ALLOWANCE = 5000;
+      
+        uint constant ALLOWANCE_OAP = 7000;
+      
+        uint tax_allowance; 
+      
+        uint income; 
+      
+        uint256 rev;
+      
+      
+ *      constructor(address p1, address p2) {
+ *        age = 0;
+ *        isMarried = false;
+ *        parent1 = p1;
+ *        parent2 = p2;
+ *        spouse = address(0);
+ *        income = 0;
+ *        tax_allowance = DEFAULT_ALLOWANCE;
+ *        iscontract = true;
+        } 
+      
+      
+        function marry(address new_spouse) public {
+          require(new_spouse != address(0), "invalid spouse");
+          require(new_spouse != address(this), "self marriage");
+          require(!isMarried && spouse == address(0), "already married");
+      
+          Taxpayer sp = Taxpayer(new_spouse);
+      
+          require(!sp.getIsMarriedForSSA(), "spouse already married");
+          require(sp.getSpouseForSSA() == address(0), "spouse already married");
+      
+          spouse = new_spouse;
+          isMarried = true;
+      
+          sp.marryBack(address(this));
+      
+        }
+      
+        function marryBack(address other) public {
+          require(msg.sender == other, "only spouse");
+          require(other != address(0) && other != address(this), "invalid other");
+          require(!isMarried && spouse == address(0), "already married");
+      
+          spouse = other;
+          isMarried = true;
+      }
+      
+        function _baselineAllowance() internal view returns (uint) {
+          return (age >= 65) ? ALLOWANCE_OAP : DEFAULT_ALLOWANCE;
+        }
+      
+        function _refreshAllowanceFloor() internal {
+            uint base = _baselineAllowance();
+            if (tax_allowance < base) {
+                tax_allowance = base;
+            }
+        }
+       
+        function divorce() public {
+          if (spouse != address(0)) {
+            address old = spouse;
+            Taxpayer oldTp = Taxpayer(old);
+      
+            require(oldTp.getSpouseForSSA() == address(this), "not reciprocal");
+      
+            spouse = address(0);
+            isMarried = false;
+      
+            tax_allowance = _baselineAllowance();
+      
+            oldTp.divorceBack(address(this));
+          } else {
+            spouse = address(0);
+            isMarried = false;
+            tax_allowance = _baselineAllowance();
+          }
+        } 
+      
+        function divorceBack(address expectedSpouse) public {
+          require(msg.sender == expectedSpouse, "only spouse");
+          require(spouse == expectedSpouse, "not reciprocal");
+      
+          spouse = address(0);
+          isMarried = false;
+      
+          tax_allowance = _baselineAllowance();
+        }
+      
+        function divorceBack() public {
+          divorceBack(msg.sender);
+        }
+      
+      
+        function transferAllowance(uint change) public {
+            require(isMarried, "not married");
+            require(spouse != address(0), "no spouse");
+            require(change > 0, "zero");
+            require(change <= tax_allowance, "insufficient");
+      
+            if (age >= 65) {
+                require(tax_allowance - change >= ALLOWANCE_OAP, "OAP min allowance");
+            }
+      
+            Taxpayer sp = Taxpayer(spouse);
+      
+            require(sp.isContract(), "spouse not contract");
+            require(sp.getSpouseForSSA() == address(this), "not reciprocal");
+      
+            tax_allowance -= change;
+      
+            sp.setTaxAllowance(sp.getTaxAllowance() + change);
+        }
+      
+        function haveBirthday() public {
+          age++;
+          _refreshAllowanceFloor();
+      
+        }
+      
+        function setTaxAllowance(uint ta) public {
+          require(Taxpayer(msg.sender).isContract() || Lottery(msg.sender).isContract());
+      
+          uint base = _baselineAllowance();
+          if (ta < base) {
+            tax_allowance = base;
+          } else {
+            tax_allowance = ta;
+          }
+        }
+      
+        function getTaxAllowance() public view returns(uint) {
+          return tax_allowance;
+      
+        }
+      
+        function isContract() public view returns(bool){
+          return iscontract;
+      
+        }
+      
+ *      function joinLottery(address lot, uint256 r) public {
+ *        Lottery l = Lottery(lot);
+ *        l.commit(keccak256(abi.encode(r)));
+ *        rev = r;
+      
+        }
+      
+ *      function revealLottery(address lot, uint256 r) public {
+ *        Lottery l = Lottery(lot);
+ *        l.reveal(r);
+          rev = 0;
+      
+        }
+      
+        function getSpouseForSSA() public view returns (address) {
+          return spouse;
+        }
+      
+        function getIsMarriedForSSA() public view returns (bool) {
+          return isMarried;
+        }
+      
+      }
+      
+
+/src/tests/echidna/Echidna_Lottery.sol
+      // SPDX-License-Identifier: UNLICENSED
+      pragma solidity ^0.8.22;
+      
+      import "./LotteryHarness.sol";
+      import "./TaxpayerHarness.sol";
+      
+ *r   contract Echidna_Lottery {
+          LotteryHarness internal L;
+      
+          TaxpayerHarness internal P0;
+          TaxpayerHarness internal P1;
+          TaxpayerHarness internal P2;
+      
+          mapping(address => uint256) internal lastR;
+      
+ *        constructor() {
+ *            L = new LotteryHarness(1);
+ *            P0 = new TaxpayerHarness(address(0), address(0));
+ *            P1 = new TaxpayerHarness(address(0), address(0));
+ *            P2 = new TaxpayerHarness(address(0), address(0));
+          }
+      
+ *        function _pick(uint8 who) internal view returns (TaxpayerHarness) {
+ *            uint8 w = who % 3;
+ *            if (w == 0) return P0;
+ *            if (w == 1) return P1;
+ *            return P2;
+          }
+      
+ *        function act_start(uint8) public {
+ *            if (L.getStartTime() != 0) return;
+ *            L.startLottery();
+          }
+      
+ *        function act_commit(uint8 who, uint256 r) public {
+ *            TaxpayerHarness p = _pick(who);
+ *            if (L.getStartTime() == 0) return;
+ *            lastR[address(p)] = r;
+ *r           p.joinLottery(address(L), r);
+          }
+      
+ *        function act_reveal(uint8 who) public {
+ *            TaxpayerHarness p = _pick(who);
+ *            if (L.getStartTime() == 0) return;
+      
+ *            uint256 r = lastR[address(p)];
+ *            if (L.getCommit(address(p)) == bytes32(0)) return;
+      
+ *r           p.revealLottery(address(L), r);
+          }
+      
+ *        function act_end(uint8) public {
+ *            if (L.getEndTime() == 0) return;
+ *            if (L.getRevealedLen() == 0) return;
+              L.endLottery();
+          }
+      
+          function echidna_L1_binding() public view returns (bool) {
+              uint n = L.getRevealedLen();
+              for (uint i = 0; i < n; i++) {
+                  address a = L.getRevealedAt(i);
+                  bytes32 c = L.getCommit(a);
+                  uint v = L.getReveal(a);
+                  if (keccak256(abi.encode(v)) != c) return false;
+              }
+              return true;
+          }
+      
+          function echidna_L2_no_commit_when_not_started() public view returns (bool) {
+              if (L.getStartTime() != 0) return true;
+              if (L.getCommit(address(P0)) != bytes32(0)) return false;
+              if (L.getCommit(address(P1)) != bytes32(0)) return false;
+              if (L.getCommit(address(P2)) != bytes32(0)) return false;
+              return true;
+          }
+      
+          function echidna_L3_unique_reveals() public view returns (bool) {
+              uint n = L.getRevealedLen();
+              for (uint i = 0; i < n; i++) {
+                  address ai = L.getRevealedAt(i);
+                  for (uint j = i + 1; j < n; j++) {
+                      if (ai == L.getRevealedAt(j)) return false;
+                  }
+              }
+              return true;
+          }
+      }
+
+/src/tests/echidna/LotteryHarness.sol
+      // SPDX-License-Identifier: UNLICENSED
+      pragma solidity ^0.8.22;
+      
+      import "../../contracts/Lottery.sol";
+      
+ *    contract LotteryHarness is Lottery {
+ *        constructor(uint p) Lottery(p) {}
+      
+ *        function getStartTime() external view returns (uint256) { return startTime; }
+          function getRevealTime() external view returns (uint256) { return revealTime; }
+ *        function getEndTime() external view returns (uint256) { return endTime; }
+      
+ *        function getCommit(address a) external view returns (bytes32) { return commits[a]; }
+          function getReveal(address a) external view returns (uint) { return reveals[a]; }
+ *        function getRevealedLen() external view returns (uint) { return revealed.length; }
+          function getRevealedAt(uint i) external view returns (address) { return revealed[i]; }
+          
+      }
+
+/src/tests/echidna/TaxpayerHarness.sol
+      // SPDX-License-Identifier: UNLICENSED
+      pragma solidity ^0.8.22;
+      
+      import "../../contracts/Taxpayer.sol";
+      
+ *    contract TaxpayerHarness is Taxpayer {
+ *        constructor(address p1, address p2) Taxpayer(p1, p2) {}
+      
+          function getSpouse() external view returns (address) {
+              return spouse;
+          
+          }
+      
+          function getIsMarried() external view returns (bool) {
+              return isMarried;
+          
+          }
+      
+          function getAge() external view returns (uint) {
+              return age;
+      
+          }
+      }
+

@@ -4,7 +4,7 @@ This repository contains the coursework project for *Security in Software Applic
 
 The goal is to define **security properties (things that must NOT happen)**, use **Echidna** to find counterexamples, identify the **root cause**, implement a **fix**, and re-run Echidna until all properties are green.
 
-This README documents what has been completed so far (Day 0/Day 1 setup + Taxpayer Parts 1–3).
+This README documents what has been completed so far (Day 0 setup + Taxpayer Parts 1–3 + Lottery commit–reveal fuzzing).
 
 ## What has been completed so far
 
@@ -85,6 +85,21 @@ After finishing Parts 1–3, the properties were consolidated into a single Echi
 #### Runs executed
 - Smoke run (quick regression): log saved as `artifacts/logs/all_smoke.txt`
 - Release evidence (long run, 300k calls): log saved as `artifacts/logs/all_release.txt`
+
+### 6) Lottery — Commit–Reveal (Part 4)
+
+The `Lottery` contract implements a basic commit–reveal protocol with phases (start → commit → reveal → end). A dedicated harness and Echidna suite were added to validate key safety properties and to drive the contract through phase transitions.
+
+#### Properties implemented
+- **L1 Binding**: a revealed value must match the prior commitment (`keccak256(abi.encode(rev)) == commit[msg.sender]`).
+- **L2 Phase gating**: commit/reveal/end must not be callable outside the correct phase (e.g., no commit before start, no reveal before revealTime, no end before endTime).
+- **L3 Unique reveals**: the same participant must not be able to appear twice in the `revealed` list.
+
+#### Runs executed
+- Smoke run: `artifacts/logs/lottery_PASS_smoke.txt`
+- Release evidence (80k calls): `artifacts/logs/lottery_PASS_release.txt`
+
+Note: early failing runs were saved as `artifacts/logs/lottery_FAIL_initial.txt`.
 
 ## How to reproduce
 
@@ -171,50 +186,75 @@ Notes:
 - `echidna/all.yaml` should set a higher `testLimit` (e.g., 300000) for the release run.
 - Minor `Ticker: poll failed: Interrupted system call` messages may appear; they do not affect correctness.
 
+### 6) Lottery commit–reveal (Part 4)
+
+Smoke / release runs (config controls `testLimit`):
+
+```bash
+docker run --rm --platform linux/amd64 \
+  -v "$PWD":/src -w /src \
+  trailofbits/echidna:latest \
+  echidna-test tests/echidna/Echidna_Lottery.sol \
+    --config echidna/lottery.yaml \
+    --contract Echidna_Lottery \
+  | tee artifacts/logs/lottery_PASS_smoke.txt
+```
+
+For a longer run, increase `testLimit` in `echidna/lottery.yaml` (e.g., 80000) and save as:
+
+```bash
+docker run --rm --platform linux/amd64 \
+  -v "$PWD":/src -w /src \
+  trailofbits/echidna:latest \
+  echidna-test tests/echidna/Echidna_Lottery.sol \
+    --config echidna/lottery.yaml \
+    --contract Echidna_Lottery \
+  | tee artifacts/logs/lottery_PASS_release.txt
+```
+
 ## Evidence locations
 
-### Logs
-- `artifacts/logs/taxpayer_p1_fail.txt` (failing run)
-- `artifacts/logs/taxpayer_p1_pass.txt` (passing run)
-- `artifacts/logs/taxpayer_p2_fail.txt` (failing run)
-- `artifacts/logs/taxpayer_p2_pass.txt` (passing run)
-- `artifacts/logs/taxpayer_p3_fail.txt` (failing run)
-- `artifacts/logs/taxpayer_p3_pass.txt` (passing run)
-- `artifacts/logs/all_smoke.txt` (smoke run)
-- `artifacts/logs/all_release.txt` (release evidence, long run)
+### Logs (raw)
+- `artifacts/logs/all_smoke.txt`
+- `artifacts/logs/all_release.txt`
+- `artifacts/logs/lottery_FAIL_initial.txt`
+- `artifacts/logs/lottery_PASS_smoke.txt`
+- `artifacts/logs/lottery_PASS_release.txt`
+
+### Curated evidence bundle
+A curated copy of the key artifacts is kept under `artifacts/evidence/`.
+
+- Taxpayer consolidated release log: `artifacts/evidence/all_release.txt`
+- Lottery logs: `artifacts/evidence/lottery/`
+  - `lottery_FAIL_initial.txt`
+  - `lottery_PASS_smoke.txt`
+  - `lottery_PASS_release.txt`
 
 ### Screenshots
-- `artifacts/screenshots/p1_fail_no_self.png`
-- `artifacts/screenshots/p1_fail_coherent_unmarried.png`
-- `artifacts/screenshots/p1_fail_symmetry.png`
-- `artifacts/screenshots/p1_pass.png`
-- artifacts/screenshots/p2_fail_pooling_seq.png
-- artifacts/screenshots/p2_fail_unmarried_seq.png
-- artifacts/screenshots/p2_pass.png
-- artifacts/screenshots/p2_pass_seed.png
-- `artifacts/screenshots/p3_fail_oap_min_7000.png`
-- `artifacts/screenshots/p3_pass_oap_min_7000.png`
-- `artifacts/screenshots/all_smoke_pass.png`
-- `artifacts/screenshots/all_release_pass.png`
+Screenshots are stored in:
+- `artifacts/evidence/screenshots/`
+
+Current filenames:
+- `P1_FAIL_symmetry.png`
+- `P1_PASS.png`
+- `P2_FAIL_pooling.png`
+- `P2_PASS.png`
+- `P3_FAIL_oap_min.png`
+- `P3_PASS_oap_min.png`
+- `ALL_PASS_smoke.png`
 
 ### Embedded screenshots
-![P1 FAIL - no self marriage](artifacts/screenshots/p1_fail_no_self.png)
-![P1 FAIL - coherent unmarried](artifacts/screenshots/p1_fail_coherent_unmarried.png)
-![P1 FAIL - symmetry](artifacts/screenshots/p1_fail_symmetry.png)
-![P1 PASS](artifacts/screenshots/p1_pass.png)
-![P2 FAIL - pooling conservation](artifacts/screenshots/p2_fail_pooling_seq.png)
-![P2 FAIL - unmarried baseline](artifacts/screenshots/p2_fail_unmarried_seq.png)
-![P2 PASS](artifacts/screenshots/p2_pass.png)
-![P2 PASS - seed and total calls](artifacts/screenshots/p2_pass_seed.png)
-![P3 FAIL - OAP min 7000](artifacts/screenshots/p3_fail_oap_min_7000.png)
-![P3 PASS - OAP min 7000](artifacts/screenshots/p3_pass_oap_min_7000.png)
-![ALL SMOKE PASS](artifacts/screenshots/all_smoke_pass.png)
-![ALL RELEASE PASS](artifacts/screenshots/all_release_pass.png)
+![P1 FAIL - symmetry](artifacts/evidence/screenshots/P1_FAIL_symmetry.png)
+![P1 PASS](artifacts/evidence/screenshots/P1_PASS.png)
+![P2 FAIL - pooling conservation](artifacts/evidence/screenshots/P2_FAIL_pooling.png)
+![P2 PASS](artifacts/evidence/screenshots/P2_PASS.png)
+![P3 FAIL - OAP min 7000](artifacts/evidence/screenshots/P3_FAIL_oap_min.png)
+![P3 PASS - OAP min 7000](artifacts/evidence/screenshots/P3_PASS_oap_min.png)
+![ALL SMOKE PASS](artifacts/evidence/screenshots/ALL_PASS_smoke.png)
 
 ### Corpus
-- `artifacts/corpus/taxpayer_p1/`
-- artifacts/corpus/taxpayer_p2/
-- artifacts/corpus/taxpayer_p3/
+- Taxpayer: `artifacts/corpus/all/`
+- Lottery: `artifacts/corpus/lottery/`
 
 ## Current status
 - Day 0 tooling + sanity check: completed
@@ -222,3 +262,4 @@ Notes:
 - Taxpayer Part 2 (P2): completed (properties implemented, counterexamples captured, fixes applied, re-test passing)
 - Taxpayer Part 3 (P3): completed (properties implemented, counterexamples captured, fixes applied, re-test passing)
 - Taxpayer Consolidation (All: P1–P3 together): completed (smoke + long run release evidence passing)
+- Lottery commit–reveal (Part 4): completed (properties implemented + smoke + release evidence passing)

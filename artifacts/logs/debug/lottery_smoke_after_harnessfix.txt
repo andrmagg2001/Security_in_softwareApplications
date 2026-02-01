@@ -1,0 +1,1 @@
+[2026-02-01 18:11:20.76] Compiling `tests/echidna/Echidna_Lottery.sol`... Done! (5.090232044s)
