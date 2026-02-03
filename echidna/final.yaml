@@ -1,4 +1,4 @@
-testLimit:   200000
-seqLen:      100
-shrinkLimit: 10000
-corpusDir:   artifcats/corpus/final
+testLimit:    300000
+seqLen:       80
+shrinkLimit:  8000
+corpusDir:    artifacts/corpus/final

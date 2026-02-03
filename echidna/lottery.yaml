@@ -1,4 +1,4 @@
-testLimit:   80000
+testLimit:   300000
 seqLen:      80
 shrinkLimit: 8000
 corpusDir:   artifacts/corpus/lottery

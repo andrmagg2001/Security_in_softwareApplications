@@ -29,38 +29,39 @@ contract Echidna_Lottery {
 
     function act_start(uint8) public {
         if (L.getStartTime() != 0) return;
-        L.startLottery();
+        try L.startLottery() {} catch {}
     }
 
     function act_commit(uint8 who, uint256 r) public {
         TaxpayerHarness p = _pick(who);
         if (L.getStartTime() == 0) return;
         lastR[address(p)] = r;
-        p.joinLottery(address(L), r);
+        try p.joinLottery(address(L), r) {} catch {}
     }
 
     function act_reveal(uint8 who) public {
         TaxpayerHarness p = _pick(who);
         if (L.getStartTime() == 0) return;
 
-        uint256 r = lastR[address(p)];
         if (L.getCommit(address(p)) == bytes32(0)) return;
 
-        p.revealLottery(address(L), r);
+        uint256 r = lastR[address(p)];
+        try p.revealLottery(address(L), r) {} catch {}
     }
 
     function act_end(uint8) public {
         if (L.getEndTime() == 0) return;
         if (L.getRevealedLen() == 0) return;
-        L.endLottery();
+        try L.endLottery() {} catch {}
     }
 
     function echidna_L1_binding() public view returns (bool) {
-        uint n = L.getRevealedLen();
-        for (uint i = 0; i < n; i++) {
+        uint256 n = L.getRevealedLen();
+        for (uint256 i = 0; i < n; i++) {
             address a = L.getRevealedAt(i);
             bytes32 c = L.getCommit(a);
-            uint v = L.getReveal(a);
+            uint256 v = L.getReveal(a);
+            if (c == bytes32(0)) return false;
             if (keccak256(abi.encode(v)) != c) return false;
         }
         return true;
@@ -75,13 +76,47 @@ contract Echidna_Lottery {
     }
 
     function echidna_L3_unique_reveals() public view returns (bool) {
-        uint n = L.getRevealedLen();
-        for (uint i = 0; i < n; i++) {
+        uint256 n = L.getRevealedLen();
+        for (uint256 i = 0; i < n; i++) {
             address ai = L.getRevealedAt(i);
-            for (uint j = i + 1; j < n; j++) {
+            for (uint256 j = i + 1; j < n; j++) {
                 if (ai == L.getRevealedAt(j)) return false;
             }
         }
         return true;
+    }
+
+    function echidna_L4_phase_correctness() public view returns (bool) {
+        uint8 p = L.getPhase();
+
+        if (p == 0) {
+            if (L.getStartTime() != 0) return false;
+            if (L.getRevealTime() != 0) return false;
+            if (L.getEndTime() != 0) return false;
+        }
+
+        if (p == 1 || p == 2) {
+            if (L.getStartTime() == 0) return false;
+            if (L.getRevealTime() == 0) return false;
+            if (L.getEndTime() == 0) return false;
+        }
+
+        return true;
+    }
+
+    function echidna_L5_pot_balance_zero() public view returns (bool) {
+        return address(L).balance == 0;
+        
+    }
+
+    function echidna_L6_winner_validity() public view returns (bool) {
+        address w = L.lastWinner();
+        uint256 n = L.lastRevealedLen();
+
+        if (w == address(0)) {
+            return n == 0;
+        }
+
+        return n > 0;
     }
 }

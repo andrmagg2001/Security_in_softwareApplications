@@ -1,42 +1,66 @@
-[2026-02-01 17:27:01.18] Compiling `tests/echidna/Echidna_Lottery.sol`... Done! (7.105276878s)
+[2026-02-03 17:48:44.93] Compiling `tests/echidna/Echidna_Lottery.sol`... Done! (4.34091771s)
 Analyzing contract: /src/tests/echidna/Echidna_Lottery.sol:Echidna_Lottery
-[2026-02-01 17:27:08.31] Running slither on `tests/echidna/Echidna_Lottery.sol`... Done! (0.926986209s)
+[2026-02-03 17:48:49.30] Running slither on `tests/echidna/Echidna_Lottery.sol`... Done! (0.967159334s)
 Loaded 3 transaction sequences from artifacts/corpus/lottery/reproducers
-Loaded 7 transaction sequences from artifacts/corpus/lottery/coverage
-[2026-02-01 17:27:09.37] [Worker 3] New coverage: 3524 instr, 3 contracts, 1 seqs in corpus (act_end)
-[2026-02-01 17:27:09.37] [Worker 0] New coverage: 3524 instr, 3 contracts, 2 seqs in corpus (act_commit)
-[2026-02-01 17:27:09.37] [Worker 1] New coverage: 3524 instr, 3 contracts, 2 seqs in corpus (act_commit)
-[2026-02-01 17:27:09.38] [Worker 0] Sequence replayed from corpus file 3342913042022358190.txt (1/3)
-[2026-02-01 17:27:09.38] [Worker 1] Sequence replayed from corpus file 3342913042022358190.txt (1/3)
-[2026-02-01 17:27:09.38] [Worker 3] Sequence replayed from corpus file 5141865411916094771.txt (1/1)
-[2026-02-01 17:27:09.38] [Worker 0] Sequence replayed from corpus file 4945774945827925688.txt (2/3)
-[2026-02-01 17:27:09.39] [Worker 0] Sequence replayed from corpus file 5141865411916094771.txt (3/3)
-[2026-02-01 17:27:09.42] [Worker 2] New coverage: 3530 instr, 3 contracts, 3 seqs in corpus (act_reveal)
-[2026-02-01 17:27:09.42] [Worker 2] Sequence replayed from corpus file 7182594147947241027.txt (1/3)
-[2026-02-01 17:27:09.44] [Worker 1] Sequence replayed from corpus file 1368460427354532064.txt (2/3)
-[2026-02-01 17:27:09.45] [Worker 3] New coverage: 3530 instr, 3 contracts, 4 seqs in corpus (act_reveal)
-[2026-02-01 17:27:09.46]  Saved reproducer to artifacts/corpus/lottery/coverage/5845229746004564437.txt
-[2026-02-01 17:27:09.46] [Worker 2] Sequence replayed from corpus file 6345365862727314880.txt (2/3)
-[2026-02-01 17:27:09.47] [Worker 1] Sequence replayed from corpus file 6554036862187827302.txt (3/3)
-[2026-02-01 17:27:09.52] [Worker 2] Sequence replayed from corpus file 657369188370041095.txt (3/3)
-[2026-02-01 17:27:12.31] [status] tests: 0/3, fuzzing: 30753/80000, values: [], cov: 3530, corpus: 4, gas/s: 477648698
-[2026-02-01 17:27:15.32] [status] tests: 0/3, fuzzing: 60954/80000, values: [], cov: 3530, corpus: 4, gas/s: 470367852
-[2026-02-01 17:27:17.20] [Worker 0] Test limit reached. Stopping.
-[2026-02-01 17:27:17.21] [Worker 2] Test limit reached. Stopping.
-[2026-02-01 17:27:17.22] [Worker 3] Test limit reached. Stopping.
-[2026-02-01 17:27:17.22] [Worker 1] Test limit reached. Stopping.
-[2026-02-01 17:27:17.22] [status] tests: 0/3, fuzzing: 80113/80000, values: [], cov: 3530, corpus: 4, gas/s: 446761263
+Loaded 10 transaction sequences from artifacts/corpus/lottery/coverage
+[2026-02-03 17:48:50.40] [Worker 3] New coverage: 3924 instr, 3 contracts, 1 seqs in corpus (act_end)
+[2026-02-03 17:48:50.40] [Worker 0] New coverage: 3924 instr, 3 contracts, 2 seqs in corpus (act_commit)
+[2026-02-03 17:48:50.40] [Worker 3] Sequence replayed from corpus file 5141865411916094771.txt (1/1)
+[2026-02-03 17:48:50.40] [Worker 0] Sequence replayed from corpus file 3342913042022358190.txt (1/4)
+[2026-02-03 17:48:50.41] [Worker 0] Sequence replayed from corpus file 4945774945827925688.txt (2/4)
+[2026-02-03 17:48:50.42] [Worker 0] Sequence replayed from corpus file 5141865411916094771.txt (3/4)
+[2026-02-03 17:48:50.42] [Worker 0] Sequence replayed from corpus file 3342913042022358190.txt (4/4)
+[2026-02-03 17:48:50.47] [Worker 2] New coverage: 3939 instr, 3 contracts, 3 seqs in corpus (act_reveal)
+[2026-02-03 17:48:50.47] [Worker 2] Sequence replayed from corpus file 5845229746004564437.txt (1/4)
+[2026-02-03 17:48:50.47] [Worker 1] New coverage: 3939 instr, 3 contracts, 4 seqs in corpus (act_end)
+[2026-02-03 17:48:50.47] [Worker 1] Sequence replayed from corpus file 1863644924790320846.txt (1/4)
+[2026-02-03 17:48:50.52] [Worker 2] New coverage: 3942 instr, 3 contracts, 5 seqs in corpus (act_reveal)
+[2026-02-03 17:48:50.52] [Worker 2] Sequence replayed from corpus file 7182594147947241027.txt (2/4)
+[2026-02-03 17:48:50.53] [Worker 1] Sequence replayed from corpus file 1457697952572432424.txt (2/4)
+[2026-02-03 17:48:50.58] [Worker 2] Sequence replayed from corpus file 6345365862727314880.txt (3/4)
+[2026-02-03 17:48:50.59] [Worker 1] Sequence replayed from corpus file 1368460427354532064.txt (3/4)
+[2026-02-03 17:48:50.64] [Worker 2] Sequence replayed from corpus file 657369188370041095.txt (4/4)
+[2026-02-03 17:48:50.64] [Worker 1] Sequence replayed from corpus file 6554036862187827302.txt (4/4)
+[2026-02-03 17:48:53.33] [status] tests: 0/6, fuzzing: 14775/300000, values: [], cov: 3942, corpus: 5, gas/s: 233651047
+[2026-02-03 17:48:56.34] [status] tests: 0/6, fuzzing: 28974/300000, values: [], cov: 3942, corpus: 5, gas/s: 223752092
+[2026-02-03 17:48:59.34] [status] tests: 0/6, fuzzing: 42110/300000, values: [], cov: 3942, corpus: 5, gas/s: 205504897
+[2026-02-03 17:49:02.35] [status] tests: 0/6, fuzzing: 56523/300000, values: [], cov: 3942, corpus: 5, gas/s: 223878684
+[2026-02-03 17:49:05.36] [status] tests: 0/6, fuzzing: 70640/300000, values: [], cov: 3942, corpus: 5, gas/s: 222054239
+[2026-02-03 17:49:08.36] [status] tests: 0/6, fuzzing: 84976/300000, values: [], cov: 3942, corpus: 5, gas/s: 224569178
+[2026-02-03 17:49:11.37] [status] tests: 0/6, fuzzing: 99219/300000, values: [], cov: 3942, corpus: 5, gas/s: 225270115
+[2026-02-03 17:49:14.38] [status] tests: 0/6, fuzzing: 113454/300000, values: [], cov: 3942, corpus: 5, gas/s: 223341295
+[2026-02-03 17:49:17.38] [status] tests: 0/6, fuzzing: 127610/300000, values: [], cov: 3942, corpus: 5, gas/s: 223357832
+[2026-02-03 17:49:20.39] [status] tests: 0/6, fuzzing: 141875/300000, values: [], cov: 3942, corpus: 5, gas/s: 225749906
+[2026-02-03 17:49:23.39] [status] tests: 0/6, fuzzing: 155929/300000, values: [], cov: 3942, corpus: 5, gas/s: 222678040
+[2026-02-03 17:49:26.39] [status] tests: 0/6, fuzzing: 170134/300000, values: [], cov: 3942, corpus: 5, gas/s: 223311650
+[2026-02-03 17:49:29.39] [status] tests: 0/6, fuzzing: 184463/300000, values: [], cov: 3942, corpus: 5, gas/s: 225296761
+[2026-02-03 17:49:32.40] [status] tests: 0/6, fuzzing: 198716/300000, values: [], cov: 3942, corpus: 5, gas/s: 224125870
+[2026-02-03 17:49:35.41] [status] tests: 0/6, fuzzing: 212971/300000, values: [], cov: 3942, corpus: 5, gas/s: 223761810
+[2026-02-03 17:49:38.41] [status] tests: 0/6, fuzzing: 227233/300000, values: [], cov: 3942, corpus: 5, gas/s: 225512798
+[2026-02-03 17:49:41.41] [status] tests: 0/6, fuzzing: 241426/300000, values: [], cov: 3942, corpus: 5, gas/s: 221093155
+[2026-02-03 17:49:44.41] [status] tests: 0/6, fuzzing: 255683/300000, values: [], cov: 3942, corpus: 5, gas/s: 224263165
+[2026-02-03 17:49:47.42] [status] tests: 0/6, fuzzing: 269741/300000, values: [], cov: 3942, corpus: 5, gas/s: 222062286
+[2026-02-03 17:49:50.42] [status] tests: 0/6, fuzzing: 284018/300000, values: [], cov: 3942, corpus: 5, gas/s: 223780540
+[2026-02-03 17:49:53.43] [status] tests: 0/6, fuzzing: 298332/300000, values: [], cov: 3942, corpus: 5, gas/s: 224266788
+[2026-02-03 17:49:53.68] [Worker 2] Test limit reached. Stopping.
+[2026-02-03 17:49:53.78] [Worker 0] Test limit reached. Stopping.
+[2026-02-03 17:49:53.80] [Worker 1] Test limit reached. Stopping.
+[2026-02-03 17:49:53.86] [Worker 3] Test limit reached. Stopping.
+[2026-02-03 17:49:53.86] [status] tests: 0/6, fuzzing: 300158/300000, values: [], cov: 3942, corpus: 5, gas/s: 0
+echidna_L5_pot_balance_zero: passing
+echidna_L4_phase_correctness: passing
 echidna_L3_unique_reveals: passing
 echidna_L2_no_commit_when_not_started: passing
+echidna_L6_winner_validity: passing
 echidna_L1_binding: passing
 
-Unique instructions: 3530
+Unique instructions: 3942
 Unique codehashes: 3
-Corpus size: 4
-Seed: 6894512544792281226
-Total calls: 80113
+Corpus size: 5
+Seed: 2217755706399332201
+Total calls: 300158
 
-[2026-02-01 17:27:17.22] Saving test reproducers... Done! (0.000026792s)
-[2026-02-01 17:27:17.22] Saving corpus... Done! (0.000552291s)
-[2026-02-01 17:27:17.22] Saving foundry reproducers... Done! (0.000172334s)
-[2026-02-01 17:27:17.22] Saving coverage... Done! (0.058700708s)
+[2026-02-03 17:49:53.86] Saving test reproducers... Done! (0.000028375s)
+[2026-02-03 17:49:53.86] Saving corpus... Done! (0.000553459s)
+[2026-02-03 17:49:53.86] Saving foundry reproducers... Done! (0.000174083s)
+[2026-02-03 17:49:53.87] Saving coverage... Done! (0.072171708s)
