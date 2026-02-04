@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 /// @title Echidna Dummy Harness
-/// @author Andrea Maggiore
 /// @notice Minimal contract used to validate the Echidna setup and workflow.
 /// @dev Exposes simple state transitions (inc/dec) and a trivial invariant.
 contract EchidnaDummy {

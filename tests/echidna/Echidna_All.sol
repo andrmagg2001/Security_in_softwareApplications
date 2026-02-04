@@ -4,7 +4,6 @@ pragma solidity ^0.8.22;
 import "./TaxpayerHarness.sol";
 
 /// @title Echidna All-In-One Property Harness
-/// @author Andrea Maggiore
 /// @notice Property-based fuzzing harness for the Taxpayer contract
 /// @dev Encodes global invariants over marriage, allowance pooling, and age-based rules
 contract Echidna_All {

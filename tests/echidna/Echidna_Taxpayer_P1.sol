@@ -4,7 +4,6 @@ pragma solidity ^0.8.22;
 import "./TaxpayerHarness.sol";
 
 /// @title Echidna Taxpayer P1 — Marriage Consistency Properties
-/// @author Andrea Maggiore
 /// @notice Echidna-based property tests for marriage symmetry and consistency
 /// @dev This contract models a fixed population of TaxpayerHarness instances and
 ///      checks that marriage relationships are always globally consistent under

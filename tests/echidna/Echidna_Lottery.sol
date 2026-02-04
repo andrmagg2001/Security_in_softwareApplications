@@ -5,7 +5,6 @@ import "./LotteryHarness.sol";
 import "./TaxpayerHarness.sol";
 
 /// @title Echidna_Lottery
-/// @author Andrea Maggiore
 /// @notice Echidna property-based fuzzing harness for the Lottery contract.
 /// @dev This contract drives arbitrary interactions against LotteryHarness
 ///      and checks protocol-level safety invariants.

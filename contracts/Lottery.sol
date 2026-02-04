@@ -4,7 +4,6 @@ pragma solidity ^0.8.22;
 import "./Taxpayer.sol";
 
 /// @title Commit–Reveal Lottery
-/// @author Andrea Maggiore
 /// @notice Implements a time-based commit–reveal lottery protocol.
 /// @dev The contract focuses on protocol correctness and state safety,
 ///      not on cryptographic randomness quality.

@@ -4,7 +4,6 @@ pragma solidity ^0.8.22;
 import "./Lottery.sol";
 
 /// @title Taxpayer Contract
-/// @author Andrea Maggiore
 /// @notice Models family relationships and tax allowance logic.
 /// @dev Designed for security analysis using property-based fuzzing (Echidna).
 ///      Focuses on state consistency, allowance conservation, and safe interactions
