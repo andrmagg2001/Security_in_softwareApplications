@@ -45,8 +45,8 @@ This README is written to be **reproducible 1:1** (same commands, same paths, sa
 - Baseline: if `spouse(a) == 0` then `allowance(a) == 5000`
 - Pooling conservation (reciprocal spouses): `allowance(a) + allowance(b) == 10000`
 
-**Part 3 — Age ≥ 65 ⇒ allowance floor 7000**
-- OAP minimum: if `age >= 65` then `allowance >= 7000`
+**Part 3 — Age ≥ 65 ⇒ allowance floor 9000**
+- OAP minimum: if `age >= 65` then `allowance >= 9000`
 
 A harness is used to expose internal state through **read-only getters** (no state changes), so Echidna can observe invariants.
 
@@ -62,6 +62,7 @@ Properties validated with Echidna:
 - **L4 Phase correctness**: `commit`, `reveal`, `endLottery` only callable in the correct phase
 - **L5 Pot/accounting conservation (model)**: the modeled pot is fully settled after finalization
 - **L6 Winner validity**: no mod/div-by-zero and winner is picked from `revealed`
+- **Prize semantics**: upon winning, the taxpayer allowance is increased to **9000**, in accordance with the updated project specification.
 
 ---
 

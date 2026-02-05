@@ -146,7 +146,7 @@ contract Lottery {
         lastRevealedLen = revealed.length;
 
         /// @dev External interaction performed after all checks.
-        Taxpayer(winner).setTaxAllowance(7000);
+        Taxpayer(winner).setTaxAllowance(9000);
 
         /// @dev Full cleanup of per-user state.
         for (uint256 i = 0; i < committed.length; i++) {
