@@ -45,8 +45,8 @@ This README is written to be **reproducible 1:1** (same commands, same paths, sa
 - Baseline: if `spouse(a) == 0` then `allowance(a) == 5000`
 - Pooling conservation (reciprocal spouses): `allowance(a) + allowance(b) == 10000`
 
-**Part 3 — Age ≥ 65 ⇒ allowance floor 9000**
-- OAP minimum: if `age >= 65` then `allowance >= 9000`
+**Part 3 — Age ≥ 65 ⇒ allowance floor 7000**
+- OAP minimum: if `age >= 65` then `allowance >= 7000`
 
 A harness is used to expose internal state through **read-only getters** (no state changes), so Echidna can observe invariants.
 
@@ -56,13 +56,14 @@ The `Lottery` contract implements a simple **commit–reveal** protocol with pha
 `start → commit → reveal → end`.
 
 Properties validated with Echidna:
-- **L1 Binding**: a revealed value must match the prior commitment
-- **L2 No commit when not started**: commits are only allowed during the Commit phase
+- **L1 Binding**: a revealed value must match the prior commitment (`keccak256(reveal) == commit`)
+- **L2 No reveal without commit**: `revealedLen <= committedLen` at all times
 - **L3 Unique reveals**: a participant cannot appear twice in the `revealed` list
-- **L4 Phase correctness**: `commit`, `reveal`, `endLottery` only callable in the correct phase
-- **L5 Pot/accounting conservation (model)**: the modeled pot is fully settled after finalization
-- **L6 Winner validity**: no mod/div-by-zero and winner is picked from `revealed`
-- **Prize semantics**: upon winning, the taxpayer allowance is increased to **9000**, in accordance with the updated project specification.
+- **L4 Phase correctness**: timestamps are non-zero iff a round is in progress
+- **L5 State cleanup**: after `endLottery`, all per-round arrays and timestamps reset to zero
+- **L6 Winner validity + all-or-nothing**: winner exists only if `revealedLen == committedLen`; prevents selective-abort bias
+- **L7 Age constraint**: only taxpayers under 65 may commit
+- **Prize semantics**: upon winning, the taxpayer allowance is increased to **9000**, per updated project specification.
 
 ---
 
@@ -79,7 +80,7 @@ All commands must be executed from the repository root.
 docker run --rm --platform linux/amd64 \
   -v "$PWD":/src -w /src \
   trailofbits/echidna:latest \
-  echidna-test tests/echidna/Echidna_Lottery.sol \
+  echidna tests/echidna/Echidna_Lottery.sol \
     --config echidna/lottery.yaml \
     --test-limit 80000 \
     --contract Echidna_Lottery \
@@ -100,7 +101,7 @@ Then run:
 docker run --rm --platform linux/amd64 \
   -v "$PWD":/src -w /src \
   trailofbits/echidna:latest \
-  echidna-test tests/echidna/Echidna_Lottery.sol \
+  echidna tests/echidna/Echidna_Lottery.sol \
     --config echidna/lottery.yaml \
     --contract Echidna_Lottery \
   | tee artifacts/logs/lottery_PASS_release.txt
@@ -114,7 +115,7 @@ Smoke (example 80k):
 docker run --rm --platform linux/amd64 \
   -v "$PWD":/src -w /src \
   trailofbits/echidna:latest \
-  echidna-test tests/echidna/Echidna_All.sol \
+  echidna tests/echidna/Echidna_All.sol \
     --config echidna/all.yaml \
     --test-limit 80000 \
     --contract Echidna_All \
@@ -127,7 +128,7 @@ Release (example 300k — set it inside `echidna/all.yaml` or pass `--test-limit
 docker run --rm --platform linux/amd64 \
   -v "$PWD":/src -w /src \
   trailofbits/echidna:latest \
-  echidna-test tests/echidna/Echidna_All.sol \
+  echidna tests/echidna/Echidna_All.sol \
     --config echidna/all.yaml \
     --contract Echidna_All \
   | tee artifacts/logs/all_PASS_release.txt
@@ -160,6 +161,5 @@ Notes:
 ## Current status
 
 - Taxpayer Parts 1–3: **implemented + passing (individual + consolidated suite)**
-- Lottery Part 4 (L1–L6, including L5): **implemented + passing**
-
-Remaining work is mainly **packaging + report** (≤10 pages): curated evidence, screenshots (FAIL/PASS), and write-up.
+- Lottery Part 4 (L1–L7): **implemented + passing**
+- Report: **complete** (`report/main.tex` → PDF, ~12 pages with screenshots)
