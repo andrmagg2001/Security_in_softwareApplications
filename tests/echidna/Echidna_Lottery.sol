@@ -3,6 +3,7 @@ pragma solidity ^0.8.22;
 
 import "./LotteryHarness.sol";
 import "./TaxpayerHarness.sol";
+import "../../contracts/Taxpayer.sol";
 
 /// @title Echidna_Lottery
 /// @notice Echidna property-based fuzzing harness for the Lottery contract.
@@ -69,10 +70,11 @@ contract Echidna_Lottery {
     }
 
     /// @notice Attempts to finalize the lottery
-    /// @dev Only meaningful after reveal phase
+    /// @dev Only callable when all committed participants have revealed (all-or-nothing)
     function act_end(uint8) public {
         if (L.getEndTime() == 0) return;
         if (L.getRevealedLen() == 0) return;
+        if (L.getRevealedLen() != L.getCommittedLen()) return;
         try L.endLottery() {} catch {}
     }
 
@@ -90,14 +92,10 @@ contract Echidna_Lottery {
         return true;
     }
 
-    /// @notice L2 — No commits before start
-    /// @dev Participants cannot commit before the lottery has started
-    function echidna_L2_no_commit_when_not_started() public view returns (bool) {
-        if (L.getStartTime() != 0) return true;
-        if (L.getCommit(address(P0)) != bytes32(0)) return false;
-        if (L.getCommit(address(P1)) != bytes32(0)) return false;
-        if (L.getCommit(address(P2)) != bytes32(0)) return false;
-        return true;
+    /// @notice L2 — No reveal without a prior commit
+    /// @dev The number of reveals can never exceed the number of commits
+    function echidna_L2_no_reveal_without_commit() public view returns (bool) {
+        return L.getRevealedLen() <= L.getCommittedLen();
     }
 
     /// @notice L3 — Unique reveals
@@ -133,23 +131,40 @@ contract Echidna_Lottery {
         return true;
     }
 
-    /// @notice L5 — Pot balance zero
-    /// @dev The contract balance should be zero at all times
-    function echidna_L5_pot_balance_zero() public view returns (bool) {
-        return address(L).balance == 0;
-        
+    /// @notice L5 — State cleanup after finalization
+    /// @dev After endLottery, all per-round state must be reset
+    function echidna_L5_state_cleanup() public view returns (bool) {
+        uint8 p = L.getPhase();
+        if (p == 0 && L.lastWinner() != address(0)) {
+            if (L.getCommittedLen() != 0) return false;
+            if (L.getRevealedLen() != 0) return false;
+            if (L.getStartTime() != 0) return false;
+            if (L.getRevealTime() != 0) return false;
+            if (L.getEndTime() != 0) return false;
+        }
+        return true;
     }
 
-    /// @notice L6 — Winner validity
-    /// @dev If a winner is set, there must be at least one revealed participant
+    /// @notice L7 — Participants must be under 65
+    /// @dev Only taxpayers aged under 65 may commit to the lottery
+    function echidna_L7_participants_under_65() public view returns (bool) {
+        uint256 n = L.getCommittedLen();
+        for (uint256 i = 0; i < n; i++) {
+            address a = L.getCommittedAt(i);
+            if (Taxpayer(a).getAge() >= 65) return false;
+        }
+        return true;
+    }
+
+    /// @notice L6 — Winner validity and all-or-nothing reveal
+    /// @dev Winner exists only if all committed participants revealed (prevents selective-abort bias)
     function echidna_L6_winner_validity() public view returns (bool) {
         address w = L.lastWinner();
-        uint256 n = L.lastRevealedLen();
+        uint256 rn = L.lastRevealedLen();
+        uint256 cn = L.lastCommittedLen();
 
-        if (w == address(0)) {
-            return n == 0;
-        }
+        if (w == address(0)) return rn == 0 && cn == 0;
 
-        return n > 0;
+        return rn > 0 && rn == cn;
     }
 }

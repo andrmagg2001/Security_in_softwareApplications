@@ -1,0 +1,702 @@
+/src/contracts/Lottery.sol
+   1 |     | // SPDX-License-Identifier: UNLICENSED
+   2 |     | pragma solidity ^0.8.22;
+   3 |     | 
+   4 |     | import "./Taxpayer.sol";
+   5 |     | 
+   6 |     | /// @title Commit–Reveal Lottery
+   7 |     | /// @notice Implements a time-based commit–reveal lottery protocol.
+   8 |     | /// @dev The contract focuses on protocol correctness and state safety,
+   9 |     | ///      not on cryptographic randomness quality.
+  10 | *   | contract Lottery {
+  11 |     | 
+  12 |     |     /// @notice Execution phases of the lottery protocol.
+  13 |     |     enum Phase {
+  14 |     |         NotStarted,
+  15 |     |         Commit,
+  16 |     |         Reveal
+  17 |     |     }
+  18 |     | 
+  19 |     |     /// @dev Commitment hashes submitted during the Commit phase.
+  20 |     |     mapping(address => bytes32) internal commits;
+  21 |     | 
+  22 |     |     /// @dev Revealed values submitted during the Reveal phase.
+  23 |     |     mapping(address => uint256) internal reveals;
+  24 |     | 
+  25 |     |     /// @dev Tracks whether an address has already committed in the current round.
+  26 |     |     mapping(address => bool) internal hasCommitted;
+  27 |     | 
+  28 |     |     /// @dev Tracks whether an address has already revealed in the current round.
+  29 |     |     mapping(address => bool) internal hasRevealed;
+  30 |     | 
+  31 |     |     /// @dev List of all addresses that committed in the current round.
+  32 |     |     address[] internal committed;
+  33 |     | 
+  34 |     |     /// @dev List of all addresses that successfully revealed.
+  35 |     |     address[] internal revealed;
+  36 |     | 
+  37 |     |     /// @dev Timestamp marking the start of the Commit phase.
+  38 |     |     uint256 internal startTime;
+  39 |     | 
+  40 |     |     /// @dev Timestamp marking the start of the Reveal phase.
+  41 |     |     uint256 internal revealTime;
+  42 |     | 
+  43 |     |     /// @dev Timestamp marking the end of the lottery round.
+  44 |     |     uint256 internal endTime;
+  45 |     | 
+  46 |     |     /// @dev Duration of each phase (Commit and Reveal).
+  47 |     |     uint256 internal period;
+  48 |     | 
+  49 |     |     /// @dev Constant flag used for testing and sanity checks.
+  50 |     |     bool internal iscontract;
+  51 |     | 
+  52 |     |     /// @notice Winner of the last finalized lottery round.
+  53 |     |     address public lastWinner;
+  54 |     | 
+  55 |     |     /// @notice Number of valid reveals in the last round.
+  56 |     |     uint256 public lastRevealedLen;
+  57 |     | 
+  58 |     |     /// @notice Number of commits in the last finalized round.
+  59 |     |     uint256 public lastCommittedLen;
+  60 |     | 
+  61 |     |     /// @dev Current protocol phase.
+  62 |     |     Phase internal phase;
+  63 |     | 
+  64 |     |     /// @notice Deploys a new Lottery contract.
+  65 |     |     /// @param p Duration of each phase in seconds.
+  66 | *   |     constructor(uint256 p) {
+  67 | *   |         period = p;
+  68 | *   |         iscontract = true;
+  69 | *   |         phase = Phase.NotStarted;
+  70 |     |     }
+  71 |     | 
+  72 |     |     /// @notice Synchronizes the protocol phase with block timestamps.
+  73 |     |     /// @dev Transitions Commit → Reveal when the reveal time is reached.
+  74 |     |     /// @custom:security Enforces phase correctness (L4).
+  75 | *   |     function _syncPhase() internal {
+  76 | *   |         if (phase == Phase.Commit && block.timestamp >= revealTime) {
+  77 | *   |             phase = Phase.Reveal;
+  78 |     |         }
+  79 |     |     }
+  80 |     | 
+  81 |     |     /// @notice Starts a new lottery round.
+  82 |     |     /// @dev Initializes timestamps and enters the Commit phase.
+  83 | *   |     function startLottery() public {
+  84 | *   |         require(phase == Phase.NotStarted, "already started");
+  85 |     | 
+  86 | *   |         startTime = block.timestamp;
+  87 | *   |         revealTime = startTime + period;
+  88 | *   |         endTime = revealTime + period;
+  89 | *   |         phase = Phase.Commit;
+  90 |     |     }
+  91 |     | 
+  92 |     |     /// @notice Submits a commitment for the current lottery round.
+  93 |     |     /// @param y keccak256 hash of the secret value to be revealed later.
+  94 |     |     /// @dev Callable only during the Commit phase and only once per address.
+  95 |     |     /// @custom:security Enforces unique participation (L3).
+  96 | *   |     function commit(bytes32 y) public {
+  97 | *   |         _syncPhase();
+  98 |     | 
+  99 | *   |         require(phase == Phase.Commit, "not commit phase");
+ 100 | *   |         require(startTime != 0 && block.timestamp >= startTime, "not started");
+ 101 | *   |         require(block.timestamp < revealTime, "commit closed");
+ 102 | *   |         require(!hasCommitted[msg.sender], "double commit");
+ 103 | *   |         require(y != bytes32(0), "zero commit");
+ 104 | *   |         require(Taxpayer(msg.sender).isContract(), "not a taxpayer");
+ 105 | *   |         require(Taxpayer(msg.sender).getAge() < 65, "participant too old");
+ 106 |     | 
+ 107 | *   |         commits[msg.sender] = y;
+ 108 | *   |         hasCommitted[msg.sender] = true;
+ 109 | *   |         committed.push(msg.sender);
+ 110 |     |     }
+ 111 |     | 
+ 112 |     |     /// @notice Reveals the previously committed secret value.
+ 113 |     |     /// @param rev Original secret used to generate the commitment.
+ 114 |     |     /// @dev Callable only during the Reveal phase and only if a valid commit exists.
+ 115 |     |     /// @custom:security Enforces commit–reveal binding (L1) and no reveal without commit (L2).
+ 116 | *   |     function reveal(uint256 rev) public {
+ 117 | *   |         _syncPhase();
+ 118 |     | 
+ 119 | *   |         require(phase == Phase.Reveal, "not reveal phase");
+ 120 | *   |         require(block.timestamp >= revealTime, "too early");
+ 121 | *   |         require(block.timestamp < endTime, "reveal closed");
+ 122 | *   |         require(hasCommitted[msg.sender], "no commit");
+ 123 | *   |         require(!hasRevealed[msg.sender], "double reveal");
+ 124 | *   |         require(
+ 125 | *   |             keccak256(abi.encode(rev)) == commits[msg.sender],
+ 126 |     |             "bad reveal"
+ 127 |     |         );
+ 128 |     | 
+ 129 | *   |         hasRevealed[msg.sender] = true;
+ 130 | *   |         reveals[msg.sender] = rev;
+ 131 | *   |         revealed.push(msg.sender);
+ 132 |     |     }
+ 133 |     | 
+ 134 |     |     /// @notice Finalizes the lottery and selects a winner.
+ 135 |     |     /// @dev Computes the winner deterministically and resets all per-round state.
+ 136 |     |     /// @custom:security Enforces state cleanup (L5) and winner validity (L6).
+ 137 | *   |     function endLottery() public {
+ 138 | *   |         _syncPhase();
+ 139 |     | 
+ 140 | *   |         require(phase == Phase.Reveal, "not finalize phase");
+ 141 | *   |         require(block.timestamp >= endTime, "too early");
+ 142 | *   |         require(revealed.length > 0, "no reveals");
+ 143 | *   |         require(revealed.length == committed.length, "not all revealed");
+ 144 |     | 
+ 145 | *   |         uint256 total = 0;
+ 146 | *   |         for (uint256 i = 0; i < revealed.length; i++) {
+ 147 | *   |             total += reveals[revealed[i]];
+ 148 |     |         }
+ 149 |     | 
+ 150 | *   |         address winner = revealed[total % revealed.length];
+ 151 | *   |         lastWinner = winner;
+ 152 | *   |         lastRevealedLen = revealed.length;
+ 153 | *   |         lastCommittedLen = committed.length;
+ 154 |     | 
+ 155 |     |         /// @dev External interaction performed after all checks.
+ 156 | *   |         Taxpayer(winner).setTaxAllowance(9000);
+ 157 |     | 
+ 158 |     |         /// @dev Full cleanup of per-user state.
+ 159 | *   |         for (uint256 i = 0; i < committed.length; i++) {
+ 160 | *   |             address a = committed[i];
+ 161 | *   |             delete commits[a];
+ 162 | *   |             delete reveals[a];
+ 163 | *   |             delete hasCommitted[a];
+ 164 | *   |             delete hasRevealed[a];
+ 165 |     |         }
+ 166 |     | 
+ 167 | *   |         delete committed;
+ 168 | *   |         delete revealed;
+ 169 |     | 
+ 170 | *   |         startTime = 0;
+ 171 | *   |         revealTime = 0;
+ 172 | *   |         endTime = 0;
+ 173 | *   |         phase = Phase.NotStarted;
+ 174 |     |     }
+ 175 |     | 
+ 176 |     |     /// @notice Returns whether this address corresponds to a contract instance.
+ 177 |     |     /// @dev Used for testing and sanity checks.
+ 178 | *   |     function isContract() public view returns (bool) {
+ 179 | *   |         return iscontract;
+ 180 |     |     }
+ 181 |     | 
+ 182 |     |     /// @notice Returns the start timestamp of the current round.
+ 183 | *   |     function getStartTime() external view returns (uint256) {
+ 184 | *   |         return startTime;
+ 185 |     |     }
+ 186 |     | 
+ 187 |     |     /// @notice Returns the reveal phase start timestamp.
+ 188 |     |     function getRevealTime() external view returns (uint256) {
+ 189 |     |         return revealTime;
+ 190 |     |     }
+ 191 |     | 
+ 192 |     |     /// @notice Returns the end timestamp of the current round.
+ 193 | *   |     function getEndTime() external view returns (uint256) {
+ 194 | *   |         return endTime;
+ 195 |     |     }
+ 196 |     | 
+ 197 |     |     /// @notice Returns the current protocol phase.
+ 198 |     |     function getPhase() external view returns (uint8) {
+ 199 |     |         return uint8(phase);
+ 200 |     |     }
+ 201 |     | 
+ 202 |     |     /// @notice Returns the commitment of an address.
+ 203 | *   |     function getCommit(address a) external view returns (bytes32) {
+ 204 | *   |         return commits[a];
+ 205 |     |     }
+ 206 |     | 
+ 207 |     |     /// @notice Returns the revealed value of an address.
+ 208 |     |     function getReveal(address a) external view returns (uint256) {
+ 209 |     |         return reveals[a];
+ 210 |     |     }
+ 211 |     | 
+ 212 |     |     /// @notice Returns whether an address has committed.
+ 213 |     |     function getHasCommitted(address a) external view returns (bool) {
+ 214 |     |         return hasCommitted[a];
+ 215 |     |     }
+ 216 |     | 
+ 217 |     |     /// @notice Returns whether an address has revealed.
+ 218 |     |     function getHasRevealed(address a) external view returns (bool) {
+ 219 |     |         return hasRevealed[a];
+ 220 |     |     }
+ 221 |     | 
+ 222 |     |     /// @notice Returns the number of committed participants.
+ 223 | *   |     function getCommittedLen() external view returns (uint256) {
+ 224 | *   |         return committed.length;
+ 225 |     |     }
+ 226 |     | 
+ 227 |     |     /// @notice Returns the committed address at index i.
+ 228 |     |     function getCommittedAt(uint256 i) external view returns (address) {
+ 229 |     |         return committed[i];
+ 230 |     |     }
+ 231 |     | 
+ 232 |     |     /// @notice Returns the number of revealed participants.
+ 233 | *   |     function getRevealedLen() external view returns (uint256) {
+ 234 | *   |         return revealed.length;
+ 235 |     |     }
+ 236 |     | 
+ 237 |     |     /// @notice Returns the revealed address at index i.
+ 238 |     |     function getRevealedAt(uint256 i) external view returns (address) {
+ 239 |     |         return revealed[i];
+ 240 |     |     }
+ 241 |     | }
+
+/src/contracts/Taxpayer.sol
+   1 |     | // SPDX-License-Identifier: UNLICENSED
+   2 |     | pragma solidity ^0.8.22;
+   3 |     | 
+   4 |     | import "./Lottery.sol";
+   5 |     | 
+   6 |     | /// @title Taxpayer Contract
+   7 |     | /// @notice Models family relationships and tax allowance logic.
+   8 |     | /// @dev Designed for security analysis using property-based fuzzing (Echidna).
+   9 |     | ///      Focuses on state consistency, allowance conservation, and safe interactions
+  10 |     | ///      with the Lottery contract.
+  11 |     | contract Taxpayer {
+  12 |     | 
+  13 |     |   uint age; 
+  14 |     | 
+  15 |     |   bool isMarried; 
+  16 |     | 
+  17 |     |   bool iscontract;
+  18 |     | 
+  19 |     |   address spouse; 
+  20 |     | 
+  21 |     | 
+  22 |     |   address  parent1; 
+  23 |     |   address  parent2; 
+  24 |     | 
+  25 | *   |   uint constant  DEFAULT_ALLOWANCE = 5000;
+  26 |     | 
+  27 |     |   uint constant ALLOWANCE_OAP = 7000;
+  28 |     | 
+  29 |     |   uint tax_allowance; 
+  30 |     | 
+  31 |     |   uint income; 
+  32 |     | 
+  33 |     |   uint256 rev;
+  34 |     | 
+  35 |     | 
+  36 |     |   /// @notice Initializes a taxpayer with parent references.
+  37 |     |   /// @param p1 Address of first parent.
+  38 |     |   /// @param p2 Address of second parent.
+  39 |     |   /// @dev Tax allowance is initialized to the baseline value.
+  40 | *   |   constructor(address p1, address p2) {
+  41 | *   |     age = 0;
+  42 | *   |     isMarried = false;
+  43 | *   |     parent1 = p1;
+  44 | *   |     parent2 = p2;
+  45 | *   |     spouse = address(0);
+  46 | *   |     income = 0;
+  47 | *   |     tax_allowance = DEFAULT_ALLOWANCE;
+  48 | *   |     iscontract = true;
+  49 |     |   } 
+  50 |     | 
+  51 |     | 
+  52 |     |   /// @notice Establishes a marriage with another Taxpayer contract.
+  53 |     |   /// @param new_spouse Address of the spouse contract.
+  54 |     |   /// @dev Enforces bidirectional marriage consistency.
+  55 |     |   /// @custom:security Prevents self-marriage and asymmetric relationships (P1).
+  56 |     |   function marry(address new_spouse) public {
+  57 |     |     require(new_spouse != address(0), "invalid spouse");
+  58 |     |     require(new_spouse != address(this), "self marriage");
+  59 |     |     require(!isMarried && spouse == address(0), "already married");
+  60 |     | 
+  61 |     |     Taxpayer sp = Taxpayer(new_spouse);
+  62 |     | 
+  63 |     |     require(!sp.getIsMarriedForSSA(), "spouse already married");
+  64 |     |     require(sp.getSpouseForSSA() == address(0), "spouse already married");
+  65 |     | 
+  66 |     |     spouse = new_spouse;
+  67 |     |     isMarried = true;
+  68 |     | 
+  69 |     |     sp.marryBack(address(this));
+  70 |     | 
+  71 |     |   }
+  72 |     | 
+  73 |     |   /// @notice Completes the reciprocal side of a marriage.
+  74 |     |   /// @param other Address of the initiating spouse.
+  75 |     |   /// @dev Callable only by the spouse contract to ensure atomic updates.
+  76 |     |   function marryBack(address other) public {
+  77 |     |     require(msg.sender == other, "only spouse");
+  78 |     |     require(other != address(0) && other != address(this), "invalid other");
+  79 |     |     require(Taxpayer(msg.sender).isContract(), "not a taxpayer");
+  80 |     |     require(Taxpayer(msg.sender).getSpouseForSSA() == address(this), "initiator not married to us");
+  81 |     |     require(!isMarried && spouse == address(0), "already married");
+  82 |     | 
+  83 |     |     spouse = other;
+  84 |     |     isMarried = true;
+  85 |     | }
+  86 |     | 
+  87 | *   |   function _baselineAllowance() internal view returns (uint) {
+  88 | *   |     return (age >= 65) ? ALLOWANCE_OAP : DEFAULT_ALLOWANCE;
+  89 |     |   }
+  90 |     | 
+  91 |     |   function _refreshAllowanceFloor() internal {
+  92 |     |       uint base = _baselineAllowance();
+  93 |     |       if (tax_allowance < base) {
+  94 |     |           tax_allowance = base;
+  95 |     |       }
+  96 |     |   }
+  97 |     |  
+  98 |     |   /// @notice Terminates the current marriage, if any.
+  99 |     |   /// @dev Resets allowance to the baseline value and enforces reciprocal divorce.
+ 100 |     |   function divorce() public {
+ 101 |     |     if (spouse != address(0)) {
+ 102 |     |       address old = spouse;
+ 103 |     |       Taxpayer oldTp = Taxpayer(old);
+ 104 |     | 
+ 105 |     |       require(oldTp.getSpouseForSSA() == address(this), "not reciprocal");
+ 106 |     | 
+ 107 |     |       spouse = address(0);
+ 108 |     |       isMarried = false;
+ 109 |     | 
+ 110 |     |       tax_allowance = _baselineAllowance();
+ 111 |     | 
+ 112 |     |       oldTp.divorceBack(address(this));
+ 113 |     |     } else {
+ 114 |     |       spouse = address(0);
+ 115 |     |       isMarried = false;
+ 116 |     |       tax_allowance = _baselineAllowance();
+ 117 |     |     }
+ 118 |     |   } 
+ 119 |     | 
+ 120 |     |   /// @notice Completes the reciprocal side of a divorce.
+ 121 |     |   /// @param expectedSpouse Address of the divorcing spouse.
+ 122 |     |   /// @dev Callable only by the spouse contract to maintain consistency.
+ 123 |     |   function divorceBack(address expectedSpouse) public {
+ 124 |     |     require(msg.sender == expectedSpouse, "only spouse");
+ 125 |     |     require(spouse == expectedSpouse, "not reciprocal");
+ 126 |     | 
+ 127 |     |     spouse = address(0);
+ 128 |     |     isMarried = false;
+ 129 |     | 
+ 130 |     |     tax_allowance = _baselineAllowance();
+ 131 |     |   }
+ 132 |     | 
+ 133 |     |   /// @notice Convenience wrapper for reciprocal divorce.
+ 134 |     |   /// @dev Uses the caller address as expected spouse.
+ 135 |     |   function divorceBack() public {
+ 136 |     |     divorceBack(msg.sender);
+ 137 |     |   }
+ 138 |     | 
+ 139 |     | 
+ 140 |     |   /// @notice Transfers part of the tax allowance to the spouse.
+ 141 |     |   /// @param change Amount of allowance to transfer.
+ 142 |     |   /// @dev Allowed only between mutually married taxpayers.
+ 143 |     |   /// @custom:security Preserves allowance conservation (P2).
+ 144 |     |   function transferAllowance(uint change) public {
+ 145 |     |       require(isMarried, "not married");
+ 146 |     |       require(spouse != address(0), "no spouse");
+ 147 |     |       require(change > 0, "zero");
+ 148 |     |       require(change <= tax_allowance, "insufficient");
+ 149 |     | 
+ 150 |     |       if (age >= 65) {
+ 151 |     |           require(tax_allowance - change >= ALLOWANCE_OAP, "OAP min allowance");
+ 152 |     |       }
+ 153 |     | 
+ 154 |     |       Taxpayer sp = Taxpayer(spouse);
+ 155 |     | 
+ 156 |     |       require(sp.isContract(), "spouse not contract");
+ 157 |     |       require(sp.getSpouseForSSA() == address(this), "not reciprocal");
+ 158 |     | 
+ 159 |     |       tax_allowance -= change;
+ 160 |     | 
+ 161 |     |       sp.setTaxAllowance(sp.getTaxAllowance() + change);
+ 162 |     |   }
+ 163 |     | 
+ 164 |     |   /// @notice Increments the age of the taxpayer by one year.
+ 165 |     |   /// @dev Updates the minimum allowance if an age threshold is crossed.
+ 166 |     |   function haveBirthday() public {
+ 167 |     |     age++;
+ 168 |     |     _refreshAllowanceFloor();
+ 169 |     | 
+ 170 |     |   }
+ 171 |     | 
+ 172 |     |   /// @notice Sets the tax allowance value.
+ 173 |     |   /// @param ta New allowance value.
+ 174 |     |   /// @dev Callable only by trusted contracts (Taxpayer or Lottery).
+ 175 |     |   ///      Enforces a minimum baseline allowance.
+ 176 | *   |   function setTaxAllowance(uint ta) public {
+ 177 | *   |     require(Taxpayer(msg.sender).isContract() || Lottery(msg.sender).isContract());
+ 178 |     | 
+ 179 | *   |     uint base = _baselineAllowance();
+ 180 | *   |     if (ta < base) {
+ 181 |     |       tax_allowance = base;
+ 182 |     |     } else {
+ 183 | *   |       tax_allowance = ta;
+ 184 |     |     }
+ 185 |     |   }
+ 186 |     | 
+ 187 |     |   /// @notice Returns the current tax allowance.
+ 188 |     |   function getTaxAllowance() public view returns(uint) {
+ 189 |     |     return tax_allowance;
+ 190 |     | 
+ 191 |     |   }
+ 192 |     | 
+ 193 |     |   /// @notice Returns the current age of the taxpayer.
+ 194 | *   |   function getAge() public view returns (uint) {
+ 195 | *   |     return age;
+ 196 |     |   }
+ 197 |     | 
+ 198 |     |   /// @notice Indicates whether the caller is a contract instance.
+ 199 |     |   /// @dev Used for defensive checks in cross-contract interactions.
+ 200 | *   |   function isContract() public view returns(bool){
+ 201 | *   |     return iscontract;
+ 202 |     | 
+ 203 |     |   }
+ 204 |     | 
+ 205 |     |   /// @notice Commits participation in a Lottery.
+ 206 |     |   /// @param lot Address of the Lottery contract.
+ 207 |     |   /// @param r Secret value to commit.
+ 208 |     |   /// @dev Stores the secret locally for later reveal.
+ 209 | *   |   function joinLottery(address lot, uint256 r) public {
+ 210 | *   |     Lottery l = Lottery(lot);
+ 211 | *   |     l.commit(keccak256(abi.encode(r)));
+ 212 | *   |     rev = r;
+ 213 |     | 
+ 214 |     |   }
+ 215 |     | 
+ 216 |     |   /// @notice Reveals the committed value to the Lottery.
+ 217 |     |   /// @param lot Address of the Lottery contract.
+ 218 |     |   /// @param r Previously committed secret value.
+ 219 | *   |   function revealLottery(address lot, uint256 r) public {
+ 220 | *   |     Lottery l = Lottery(lot);
+ 221 | *   |     l.reveal(r);
+ 222 | *   |     rev = 0;
+ 223 |     | 
+ 224 |     |   }
+ 225 |     | 
+ 226 |     |   /// @notice Returns the spouse address, if married.
+ 227 |     |   function getSpouseForSSA() public view returns (address) {
+ 228 |     |     return spouse;
+ 229 |     |   }
+ 230 |     | 
+ 231 |     |   /// @notice Indicates whether the taxpayer is currently married.
+ 232 |     |   function getIsMarriedForSSA() public view returns (bool) {
+ 233 |     |     return isMarried;
+ 234 |     |   }
+ 235 |     | 
+ 236 |     | }
+ 237 |     | 
+
+/src/tests/echidna/Echidna_Lottery.sol
+   1 |     | // SPDX-License-Identifier: UNLICENSED
+   2 |     | pragma solidity ^0.8.22;
+   3 |     | 
+   4 |     | import "./LotteryHarness.sol";
+   5 |     | import "./TaxpayerHarness.sol";
+   6 |     | import "../../contracts/Taxpayer.sol";
+   7 |     | 
+   8 |     | /// @title Echidna_Lottery
+   9 |     | /// @notice Echidna property-based fuzzing harness for the Lottery contract.
+  10 |     | /// @dev This contract drives arbitrary interactions against LotteryHarness
+  11 |     | ///      and checks protocol-level safety invariants.
+  12 | *r  | contract Echidna_Lottery {
+  13 |     |     /// @notice Lottery instance under test
+  14 |     |     LotteryHarness internal L;
+  15 |     | 
+  16 |     |     /// @notice Test participant harnesses simulating independent users
+  17 |     |     TaxpayerHarness internal P0;
+  18 |     |     TaxpayerHarness internal P1;
+  19 |     |     TaxpayerHarness internal P2;
+  20 |     | 
+  21 |     |     /// @dev Stores last random value used by each participant for reveal phase
+  22 |     |     mapping(address => uint256) internal lastR;
+  23 |     | 
+  24 |     |     /// @notice Deploys the Lottery harness and three Taxpayer harnesses
+  25 |     |     /// @dev Period is fixed to a small value to accelerate phase transitions
+  26 | *   |     constructor() {
+  27 | *   |         L = new LotteryHarness(1);
+  28 | *   |         P0 = new TaxpayerHarness(address(0), address(0));
+  29 | *   |         P1 = new TaxpayerHarness(address(0), address(0));
+  30 | *   |         P2 = new TaxpayerHarness(address(0), address(0));
+  31 |     |     }
+  32 |     | 
+  33 |     |     /// @dev Selects one of the predefined participants based on input
+  34 |     |     /// @param who Arbitrary selector provided by Echidna
+  35 |     |     /// @return Selected TaxpayerHarness instance
+  36 | *   |     function _pick(uint8 who) internal view returns (TaxpayerHarness) {
+  37 | *   |         uint8 w = who % 3;
+  38 | *   |         if (w == 0) return P0;
+  39 | *   |         if (w == 1) return P1;
+  40 | *   |         return P2;
+  41 |     |     }
+  42 |     | 
+  43 |     |     /// @notice Attempts to start the lottery
+  44 |     |     /// @dev Silently ignores reverts to allow arbitrary call ordering
+  45 | *   |     function act_start(uint8) public {
+  46 | *   |         if (L.getStartTime() != 0) return;
+  47 | *   |         try L.startLottery() {} catch {}
+  48 |     |     }
+  49 |     | 
+  50 |     |     /// @notice Attempts a commit action for a participant
+  51 |     |     /// @param who Participant selector
+  52 |     |     /// @param r Random value to be committed
+  53 | *   |     function act_commit(uint8 who, uint256 r) public {
+  54 | *   |         TaxpayerHarness p = _pick(who);
+  55 | *   |         if (L.getStartTime() == 0) return;
+  56 | *   |         lastR[address(p)] = r;
+  57 | *   |         try p.joinLottery(address(L), r) {} catch {}
+  58 |     |     }
+  59 |     | 
+  60 |     |     /// @notice Attempts a reveal action for a participant
+  61 |     |     /// @param who Participant selector
+  62 | *   |     function act_reveal(uint8 who) public {
+  63 | *   |         TaxpayerHarness p = _pick(who);
+  64 | *   |         if (L.getStartTime() == 0) return;
+  65 |     | 
+  66 | *   |         if (L.getCommit(address(p)) == bytes32(0)) return;
+  67 |     | 
+  68 | *   |         uint256 r = lastR[address(p)];
+  69 | *   |         try p.revealLottery(address(L), r) {} catch {}
+  70 |     |     }
+  71 |     | 
+  72 |     |     /// @notice Attempts to finalize the lottery
+  73 |     |     /// @dev Only callable when all committed participants have revealed (all-or-nothing)
+  74 | *   |     function act_end(uint8) public {
+  75 | *   |         if (L.getEndTime() == 0) return;
+  76 | *   |         if (L.getRevealedLen() == 0) return;
+  77 | *   |         if (L.getRevealedLen() != L.getCommittedLen()) return;
+  78 | *   |         try L.endLottery() {} catch {}
+  79 |     |     }
+  80 |     | 
+  81 |     |     /// @notice L1 — Commit–reveal binding
+  82 |     |     /// @dev Every revealed value must match its commitment
+  83 |     |     function echidna_L1_binding() public view returns (bool) {
+  84 |     |         uint256 n = L.getRevealedLen();
+  85 |     |         for (uint256 i = 0; i < n; i++) {
+  86 |     |             address a = L.getRevealedAt(i);
+  87 |     |             bytes32 c = L.getCommit(a);
+  88 |     |             uint256 v = L.getReveal(a);
+  89 |     |             if (c == bytes32(0)) return false;
+  90 |     |             if (keccak256(abi.encode(v)) != c) return false;
+  91 |     |         }
+  92 |     |         return true;
+  93 |     |     }
+  94 |     | 
+  95 |     |     /// @notice L2 — No reveal without a prior commit
+  96 |     |     /// @dev The number of reveals can never exceed the number of commits
+  97 |     |     function echidna_L2_no_reveal_without_commit() public view returns (bool) {
+  98 |     |         return L.getRevealedLen() <= L.getCommittedLen();
+  99 |     |     }
+ 100 |     | 
+ 101 |     |     /// @notice L3 — Unique reveals
+ 102 |     |     /// @dev Each revealed participant appears only once
+ 103 |     |     function echidna_L3_unique_reveals() public view returns (bool) {
+ 104 |     |         uint256 n = L.getRevealedLen();
+ 105 |     |         for (uint256 i = 0; i < n; i++) {
+ 106 |     |             address ai = L.getRevealedAt(i);
+ 107 |     |             for (uint256 j = i + 1; j < n; j++) {
+ 108 |     |                 if (ai == L.getRevealedAt(j)) return false;
+ 109 |     |             }
+ 110 |     |         }
+ 111 |     |         return true;
+ 112 |     |     }
+ 113 |     | 
+ 114 |     |     /// @notice L4 — Phase correctness
+ 115 |     |     /// @dev Phase variables align correctly with the current phase
+ 116 |     |     function echidna_L4_phase_correctness() public view returns (bool) {
+ 117 |     |         uint8 p = L.getPhase();
+ 118 |     | 
+ 119 |     |         if (p == 0) {
+ 120 |     |             if (L.getStartTime() != 0) return false;
+ 121 |     |             if (L.getRevealTime() != 0) return false;
+ 122 |     |             if (L.getEndTime() != 0) return false;
+ 123 |     |         }
+ 124 |     | 
+ 125 |     |         if (p == 1 || p == 2) {
+ 126 |     |             if (L.getStartTime() == 0) return false;
+ 127 |     |             if (L.getRevealTime() == 0) return false;
+ 128 |     |             if (L.getEndTime() == 0) return false;
+ 129 |     |         }
+ 130 |     | 
+ 131 |     |         return true;
+ 132 |     |     }
+ 133 |     | 
+ 134 |     |     /// @notice L5 — State cleanup after finalization
+ 135 |     |     /// @dev After endLottery, all per-round state must be reset
+ 136 |     |     function echidna_L5_state_cleanup() public view returns (bool) {
+ 137 |     |         uint8 p = L.getPhase();
+ 138 |     |         if (p == 0 && L.lastWinner() != address(0)) {
+ 139 |     |             if (L.getCommittedLen() != 0) return false;
+ 140 |     |             if (L.getRevealedLen() != 0) return false;
+ 141 |     |             if (L.getStartTime() != 0) return false;
+ 142 |     |             if (L.getRevealTime() != 0) return false;
+ 143 |     |             if (L.getEndTime() != 0) return false;
+ 144 |     |         }
+ 145 |     |         return true;
+ 146 |     |     }
+ 147 |     | 
+ 148 |     |     /// @notice L7 — Participants must be under 65
+ 149 |     |     /// @dev Only taxpayers aged under 65 may commit to the lottery
+ 150 |     |     function echidna_L7_participants_under_65() public view returns (bool) {
+ 151 |     |         uint256 n = L.getCommittedLen();
+ 152 |     |         for (uint256 i = 0; i < n; i++) {
+ 153 |     |             address a = L.getCommittedAt(i);
+ 154 |     |             if (Taxpayer(a).getAge() >= 65) return false;
+ 155 |     |         }
+ 156 |     |         return true;
+ 157 |     |     }
+ 158 |     | 
+ 159 |     |     /// @notice L6 — Winner validity and all-or-nothing reveal
+ 160 |     |     /// @dev Winner exists only if all committed participants revealed (prevents selective-abort bias)
+ 161 |     |     function echidna_L6_winner_validity() public view returns (bool) {
+ 162 |     |         address w = L.lastWinner();
+ 163 |     |         uint256 rn = L.lastRevealedLen();
+ 164 |     |         uint256 cn = L.lastCommittedLen();
+ 165 |     | 
+ 166 |     |         if (w == address(0)) return rn == 0 && cn == 0;
+ 167 |     | 
+ 168 |     |         return rn > 0 && rn == cn;
+ 169 |     |     }
+ 170 |     | }
+
+/src/tests/echidna/LotteryHarness.sol
+  1 |     | // SPDX-License-Identifier: UNLICENSED
+  2 |     | pragma solidity ^0.8.22;
+  3 |     | 
+  4 |     | import "../../contracts/Lottery.sol";
+  5 |     | 
+  6 |     | /// @title LotteryHarness
+  7 |     | /// @notice Echidna testing harness for the Lottery contract
+  8 |     | /// @dev This contract exposes the Lottery logic unchanged and is used exclusively
+  9 |     | ///      for property-based fuzzing with Echidna. No additional state or behavior
+ 10 |     | ///      is introduced beyond the inherited contract.
+ 11 | *   | contract LotteryHarness is Lottery {
+ 12 |     |     /// @notice Deploys the Lottery harness with a fixed period
+ 13 |     |     /// @param p Duration (in seconds) of each lottery phase (commit and reveal)
+ 14 |     |     /// @dev The constructor simply forwards the parameter to the base Lottery contract.
+ 15 | *   |     constructor(uint256 p) Lottery(p) {}
+ 16 |     |     
+ 17 |     | }
+
+/src/tests/echidna/TaxpayerHarness.sol
+  1 |     | // SPDX-License-Identifier: UNLICENSED
+  2 |     | pragma solidity ^0.8.22;
+  3 |     | 
+  4 |     | import "../../contracts/Taxpayer.sol";
+  5 |     | 
+  6 |     | /// @title TaxpayerHarness
+  7 |     | /// @notice Echidna harness that exposes internal Taxpayer state via getters for invariant testing.
+  8 |     | /// @dev This contract inherits Taxpayer and adds view-only helpers; it must not modify the core logic.
+  9 | *   | contract TaxpayerHarness is Taxpayer {
+ 10 |     |     /// @notice Deploys the harness by initializing the underlying Taxpayer contract.
+ 11 |     |     /// @param p1 First address used to initialize Taxpayer state.
+ 12 |     |     /// @param p2 Second address used to initialize Taxpayer state.
+ 13 | *   |     constructor(address p1, address p2) Taxpayer(p1, p2) {}
+ 14 |     | 
+ 15 |     |     /// @notice Returns the current spouse address stored in the Taxpayer state.
+ 16 |     |     /// @return The spouse address (zero address if not married).
+ 17 |     |     function getSpouse() external view returns (address) {
+ 18 |     |         return spouse;
+ 19 |     |     }
+ 20 |     | 
+ 21 |     |     /// @notice Returns whether the taxpayer is currently marked as married.
+ 22 |     |     /// @return True if married, false otherwise.
+ 23 |     |     function getIsMarried() external view returns (bool) {
+ 24 |     |         return isMarried;
+ 25 |     |     }
+ 26 |     | 
+ 27 |     | }
+

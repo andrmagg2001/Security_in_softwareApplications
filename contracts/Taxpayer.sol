@@ -76,6 +76,8 @@ contract Taxpayer {
   function marryBack(address other) public {
     require(msg.sender == other, "only spouse");
     require(other != address(0) && other != address(this), "invalid other");
+    require(Taxpayer(msg.sender).isContract(), "not a taxpayer");
+    require(Taxpayer(msg.sender).getSpouseForSSA() == address(this), "initiator not married to us");
     require(!isMarried && spouse == address(0), "already married");
 
     spouse = other;
@@ -186,6 +188,11 @@ contract Taxpayer {
   function getTaxAllowance() public view returns(uint) {
     return tax_allowance;
 
+  }
+
+  /// @notice Returns the current age of the taxpayer.
+  function getAge() public view returns (uint) {
+    return age;
   }
 
   /// @notice Indicates whether the caller is a contract instance.

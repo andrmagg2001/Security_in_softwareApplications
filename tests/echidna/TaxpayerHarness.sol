@@ -24,9 +24,4 @@ contract TaxpayerHarness is Taxpayer {
         return isMarried;
     }
 
-    /// @notice Returns the current age stored in the Taxpayer state.
-    /// @return The taxpayer age.
-    function getAge() external view returns (uint) {
-        return age;
-    }
 }

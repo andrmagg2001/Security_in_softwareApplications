@@ -55,6 +55,9 @@ contract Lottery {
     /// @notice Number of valid reveals in the last round.
     uint256 public lastRevealedLen;
 
+    /// @notice Number of commits in the last finalized round.
+    uint256 public lastCommittedLen;
+
     /// @dev Current protocol phase.
     Phase internal phase;
 
@@ -98,6 +101,8 @@ contract Lottery {
         require(block.timestamp < revealTime, "commit closed");
         require(!hasCommitted[msg.sender], "double commit");
         require(y != bytes32(0), "zero commit");
+        require(Taxpayer(msg.sender).isContract(), "not a taxpayer");
+        require(Taxpayer(msg.sender).getAge() < 65, "participant too old");
 
         commits[msg.sender] = y;
         hasCommitted[msg.sender] = true;
@@ -135,6 +140,7 @@ contract Lottery {
         require(phase == Phase.Reveal, "not finalize phase");
         require(block.timestamp >= endTime, "too early");
         require(revealed.length > 0, "no reveals");
+        require(revealed.length == committed.length, "not all revealed");
 
         uint256 total = 0;
         for (uint256 i = 0; i < revealed.length; i++) {
@@ -144,6 +150,7 @@ contract Lottery {
         address winner = revealed[total % revealed.length];
         lastWinner = winner;
         lastRevealedLen = revealed.length;
+        lastCommittedLen = committed.length;
 
         /// @dev External interaction performed after all checks.
         Taxpayer(winner).setTaxAllowance(9000);

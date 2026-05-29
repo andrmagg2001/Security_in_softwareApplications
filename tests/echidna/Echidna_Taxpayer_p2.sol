@@ -14,7 +14,7 @@ contract Echidna_Taxpayer_P2 {
     constructor() {
         for (uint256 i = 0; i < 6; i++)
         {
-            people.push(new TaxpayerHarness(address(uint160(100 + 1)), address(uint160(200 + i))));
+            people.push(new TaxpayerHarness(address(uint160(100 + i)), address(uint160(200 + i))));
 
         }
     }
